@@ -7,12 +7,16 @@ public class User implements Serializable {
 	private int id;
 	private String firstName;
 	private String lastName;
+	private String username;
+	private int type;
 
 	
-	public User(int id, String firstName, String lastName) {
+	public User(int id, String firstName, String lastName, String username, int type) {
 		setId(id);
 		setFirstName(firstName);
 		setLastName(lastName);
+		setUsername(username);
+		setType(type);
 	}
 
 	
@@ -59,6 +63,26 @@ public class User implements Serializable {
 	 */
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+
+
+	public String getUsername() {
+		return username;
+	}
+
+
+	public void setUsername(String username) {
+		this.username = username;
+	}
+
+
+	public int getType() {
+		return type;
+	}
+
+
+	public void setType(int type) {
+		this.type = type;
 	}
 	
 }

@@ -31,7 +31,7 @@ import javax.swing.JPasswordField;
 public class Client implements portInformation{
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
-	//private LoginWindow loginWindow;
+	private LoginWindow loginWindow;
 	private Socket clientSocket;
 	//private StudentWindow studentWindow;
 	//private ProfessorWindow professorWindow;
@@ -41,16 +41,16 @@ public class Client implements portInformation{
 	
 	public Client() throws IOException
 	{
-//		loginWindow = new LoginWindow();
-//		loginWindow.setLoginButtonListener(new LoginControl());
-//		loginWindow.addWindowListener((new WindowAdapter()
-//		{
-//		    @Override
-//		    public void windowClosing(WindowEvent we)
-//		    {
-//		    	close();
-//		    }
-//		}));
+		loginWindow = new LoginWindow();
+		loginWindow.setLoginButtonListener(new LoginControl());
+		loginWindow.addWindowListener((new WindowAdapter()
+		{
+		    @Override
+		    public void windowClosing(WindowEvent we)
+		    {
+		    	//close();
+		    }
+		}));
 		clientSocket = new Socket(HOST_NAME, PORT_NUMBER);
 		
 		sc = new Scanner(System.in);
@@ -86,7 +86,14 @@ public class Client implements portInformation{
 				out.flush();
 			}
 			
-			
+			if(obj instanceof User) {
+
+				if(((User)obj) != null) {
+					System.out.println("User " + ((User)obj).getUsername() + " has logged in as Type " + ((User)obj).getType());
+					loginWindow.setVisible(false);
+				}
+				else System.out.println("User DOES NOT EXIST");
+			}
 //			if(obj instanceof Student) 
 //			{	
 //				user = (User)obj;
@@ -141,6 +148,42 @@ public class Client implements portInformation{
 		
 	}
 
+	
+	public class LoginControl implements ActionListener
+	{
+		@Override
+		public void actionPerformed(ActionEvent e) 
+		{
+			if(e.getSource() == loginWindow.getLoginButton())
+			{
+				LoginInfo log = loginWindow.getLoginInfo();
+				log.setMethodFlag(1);
+				try {out.writeObject(log);}	
+				catch (IOException e1) {e1.printStackTrace();}
+			}
+			
+//			if(e.getSource() == loginWindow.getCreateAccount())
+//			{
+//				loginWindow.createAccountWindow();
+//				loginWindow.getCreateButton().addActionListener(this);
+//			}
+//			
+//			if(e.getSource() == loginWindow.getCreateButton())
+//			{
+//				Account user = loginWindow.getNewUser();
+//				if(user == null)
+//					return;
+//				try {
+//					out.writeObject(user);
+//				} catch (IOException e1) {e1.printStackTrace();}
+//				loginWindow.getCreateAccountWindow().dispose();
+//			}
+		}
+	}
+	
+	
+	
+	
 //	public void updateCoursesProf(User obj) throws IOException, ClassNotFoundException
 //	{
 //		out.writeObject(new String("UPDATE COURSES FOR PROF ("+ ((User) obj).getId() + ")"));
@@ -175,36 +218,7 @@ public class Client implements portInformation{
 //		}catch(IOException e) {e.printStackTrace();}
 //	}
 //	
-//	public class LoginControl implements ActionListener
-//	{
-//		@Override
-//		public void actionPerformed(ActionEvent e) 
-//		{
-//			if(e.getSource() == loginWindow.getLoginButton())
-//			{
-//				LoginInfo log = loginWindow.getLoginInfo();
-//				try {out.writeObject(log);}	
-//				catch (IOException e1) {e1.printStackTrace();}
-//			}
-//			
-//			if(e.getSource() == loginWindow.getCreateAccount())
-//			{
-//				loginWindow.createAccountWindow();
-//				loginWindow.getCreateButton().addActionListener(this);
-//			}
-//			
-//			if(e.getSource() == loginWindow.getCreateButton())
-//			{
-//				Account user = loginWindow.getNewUser();
-//				if(user == null)
-//					return;
-//				try {
-//					out.writeObject(user);
-//				} catch (IOException e1) {e1.printStackTrace();}
-//				loginWindow.getCreateAccountWindow().dispose();
-//			}
-//		}
-//	}
+
 //
 //	public class ProfessorControl implements ActionListener
 //	{

@@ -10,6 +10,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import SharedObjects.*;
+import database.DatabaseInterface;
 
 public class Server implements portInformation{
 
@@ -19,6 +20,7 @@ public class Server implements portInformation{
 	private ServerSocket serverSocket;
 	private ExecutorService pool;
 	private int numClients = 0;
+	private DatabaseInterface DBhelper;
 	//private JDBCHelper sqlHelper;
 	//private FileHelper fileHelper;
 	
@@ -29,6 +31,7 @@ public class Server implements portInformation{
 	public Server() {
 		//sqlHelper = new JDBCHelper();
 		//fileHelper = new FileHelper();
+		DBhelper = new DatabaseInterface();
 		try {
 			System.out.println(InetAddress.getLocalHost());
 			serverSocket = new ServerSocket(PORT_NUMBER);
@@ -52,7 +55,7 @@ public class Server implements portInformation{
 				 
 	    		 System.out.println("Client #" + ++numClients + " Connected");
 	    		 
-	    		 UserSystem system = new UserSystem(aSocket);//, sqlHelper, fileHelper);
+	    		 SystemRunnable system = new SystemRunnable(aSocket, DBhelper);//, sqlHelper, fileHelper);
 	    		 pool.execute(system);
 	    	 }
 
