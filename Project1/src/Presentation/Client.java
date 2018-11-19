@@ -74,8 +74,11 @@ public class Client implements portInformation{
 				if(((String)obj).contains("SUP FAM"))
 					System.out.println("Server Response: " + ((String)obj));
 
-				else {
+				else if(((String)obj).contains("FK")){
 					System.out.println("Server Response: " + ((String)obj));
+				}
+				else {
+					System.out.println("Sorry the server dont give a fk");
 				}
 				System.out.println("Respond to server on next line: ");
 				String response = sc.nextLine();
