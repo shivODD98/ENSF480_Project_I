@@ -133,7 +133,7 @@ public class LoginWindow extends JFrame {
 		//Image dimg2 = backgroundIcon.getScaledInstance(background.getWidth(), background.getHeight(), Image.SCALE_SMOOTH);
 		//ImageIcon thisImg2 = new ImageIcon(dimg2);
 		
-		createAccount = new JButton("Create Account");
+		createAccount = new JButton("Continue Un-registered");
 		createAccount.setHorizontalAlignment(SwingConstants.LEFT);
 		createAccount.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		createAccount.setBorderPainted(false);

@@ -1,4 +1,5 @@
 package Presentation;
+
 import SharedObjects.*;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
@@ -25,14 +26,19 @@ import java.util.Calendar;
 import java.util.Enumeration;
 import java.util.Scanner;
 
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
+import javax.swing.plaf.synth.Region;
 
 public class Client implements portInformation{
 	private ObjectInputStream in;
 	private ObjectOutputStream out;
 	private LoginWindow loginWindow;
 	private Socket clientSocket;
+	private OperatorWindow operatorWindow;
+	private RegisteredBuyerWindow registeredBuyerWindow;
 	//private StudentWindow studentWindow;
 	//private ProfessorWindow professorWindow;
 	private User user;
@@ -51,16 +57,15 @@ public class Client implements portInformation{
 		    	//close();
 		    }
 		}));
-		clientSocket = new Socket(HOST_NAME, PORT_NUMBER);
+		//clientSocket = new Socket(HOST_NAME, PORT_NUMBER);
 		
-		sc = new Scanner(System.in);
 		
 		//clientSocket = new Socket(InetAddress.getByName("10.13.67.64"), PORT_NUMBER);
-		out = new ObjectOutputStream(clientSocket.getOutputStream());
-		in = new ObjectInputStream(clientSocket.getInputStream());
+		//out = new ObjectOutputStream(clientSocket.getOutputStream());
+		//in = new ObjectInputStream(clientSocket.getInputStream());
 		
 		
-		out.writeObject(new String("HELLO BIATCH"));
+		//out.writeObject(new String("HELLO BIATCH"));
 		
 	}
 	
@@ -143,11 +148,44 @@ public class Client implements portInformation{
 
 		try {
 			Client client = new Client();
-			client.loginCommunicate();
+			client.registeredAfterLogin();
+			//client.loginCommunicate();
 		} catch (IOException e) {e.printStackTrace();}
 		
 	}
 
+	public void operatorAfterLogin() {
+		loginWindow.setVisible(false);
+		operatorWindow = new OperatorWindow();
+		operatorWindow.addActionListener(new OperatorController());
+		
+		//get promotion and docs from server, this is test data to simulate
+		ArrayList<Document> docs = new ArrayList<Document>();
+		Document d1 = new Document(1, "title1", "james mike", "123123", "this book is pretty figgen lit my man", DocumentType.Book, 20.00);
+		Document d2 = new Document(2, "title2", "Bob Sam", "123123", "this book is pretty figgen lit my man",DocumentType.Magazine, 14.00);
+		Document d3 = new Document(3, "title3", "Rya asdas", "123123", "this book is pretty figgen lit my man",DocumentType.Book,99.99);
+		Document d4 = new Document(4, "title4", "stfu", "123123", "this book is pretty figgen lit my man",DocumentType.Journal,90.00);
+		docs.add(d1);docs.add(d2);docs.add(d3);docs.add(d4);
+		operatorWindow.updateDocumentsListModel(docs);
+
+
+	}
+	
+	public void registeredAfterLogin() {
+		loginWindow.setVisible(false);
+		registeredBuyerWindow = new RegisteredBuyerWindow();
+		registeredBuyerWindow.addActionListener(new RegisteredBuyerController());
+		
+		//get promotion and docs from server, this is test data to simulate
+		ArrayList<Document> docs = new ArrayList<Document>();
+		Document d1 = new Document(1, "title1", "james mike", "123123", "this book is pretty figgen lit my man", DocumentType.Book, 20.00);
+		Document d2 = new Document(2, "title2", "Bob Sam", "123123", "this book is pretty figgen lit my man",DocumentType.Magazine, 14.00);
+		Document d3 = new Document(3, "title3", "Rya asdas", "123123", "this book is pretty figgen lit my man",DocumentType.Book,99.99);
+		Document d4 = new Document(4, "title4", "stfu", "123123", "this book is pretty figgen lit my man",DocumentType.Journal,90.00);
+		docs.add(d1);docs.add(d2);docs.add(d3);docs.add(d4);
+		registeredBuyerWindow.updateDocumentsListModel(docs);
+		registeredBuyerWindow.updatePromotionsListModel(docs);
+	}
 	
 	public class LoginControl implements ActionListener
 	{
@@ -181,33 +219,97 @@ public class Client implements portInformation{
 		}
 	}
 	
-	
-	
-	
-//	public void updateCoursesProf(User obj) throws IOException, ClassNotFoundException
-//	{
-//		out.writeObject(new String("UPDATE COURSES FOR PROF ("+ ((User) obj).getId() + ")"));
-//		Object object = in.readObject();
-//		if(object instanceof ArrayList<?>)
-//		{
-//			ArrayList<Course> courses = (ArrayList<Course>) object;
-//			professorWindow.addCourses(courses);
-//		}
-//	}
-//	
-//	public void updateCoursesStudent(User obj) throws IOException, ClassNotFoundException
-//	{
-//		out.writeObject(new String("UPDATE COURSES FOR STUDENT ("+ ((User) obj).getId() + ")"));
-//		Object object = in.readObject();
-//		if(object instanceof ArrayList<?>)
-//		{
-//			ArrayList<Course> courses = (ArrayList<Course>) object;
-//			studentWindow.addCourses(courses);
-//		}		
-//	}
-//
+	public class OperatorController implements ActionListener{
 
-//
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if(e.getSource() == operatorWindow.addButton) {
+				operatorWindow.createAddWindow();
+				operatorWindow.createButton.addActionListener(this);
+			}
+			
+			else if(e.getSource() == operatorWindow.updateDocument) {
+				operatorWindow.createAddWindow();
+				operatorWindow.createButton.addActionListener(this);
+				operatorWindow.modifyDocument();
+			}
+			
+			else if(e.getSource() == operatorWindow.deleteButton) {
+				Document doc;
+				if((doc = operatorWindow.removeFromList()) != null)
+					System.out.println("removing "+doc.getTitle());
+				//communicate with server
+			}
+			
+			else if(e.getSource() == operatorWindow.moveToPromotionButton) {
+				if(operatorWindow.isDocumentsSelected()) {
+					Document doc;
+					if((doc = operatorWindow.addToPromotionList())!=null) {
+						System.out.println("adding "+doc.getTitle()+" to promotion");
+						//communicate with server
+					}
+				}
+				else if(operatorWindow.isPromotionListSeleted()) {
+					Document doc;
+					doc = operatorWindow.removeFromPromotionList();
+					if(doc!=null) {
+						System.out.println("removing "+doc.getTitle()+" from promotion");
+						//communicate with server
+					}
+				}
+			}
+			
+			else if(e.getSource() == operatorWindow.createButton) {
+				Document doc = operatorWindow.createDocument();
+				if(doc != null) {
+					JFileChooser fc = new JFileChooser();
+					JButton open = new JButton();
+					fc.setDialogTitle("Choose Document");
+					if(fc.showOpenDialog(open) == JFileChooser.APPROVE_OPTION) {}
+					File file = fc.getSelectedFile();
+					//talk to server
+					
+				}
+			}
+			
+		}
+		
+	}
+
+	public class RegisteredBuyerController implements ActionListener{
+
+		Document docToSend;
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if(e.getSource() == registeredBuyerWindow.orderButton) {
+				Document doc;
+				if((doc=registeredBuyerWindow.getSelectedDoc())!=null) {
+					registeredBuyerWindow.createOrderWindow(doc.getTitle(), doc.getPrice());
+					registeredBuyerWindow.confirmButton.addActionListener(this);
+					docToSend = doc;
+				}
+				
+			}
+			
+			else if (e.getSource() == registeredBuyerWindow.confirmButton) {
+				PaymentInfo info = registeredBuyerWindow.createOrder(docToSend);
+				if(info!=null) {
+					registeredBuyerWindow.orderFrame.dispose();
+					//communicate with server
+				}
+			}
+			
+			else if(e.getSource() == registeredBuyerWindow.unsubButton) {
+				//delete user from db
+				registeredBuyerWindow.frame.dispose();
+				loginWindow.setVisible(true);
+				//loginCommunicate();
+			}
+			
+		}
+		
+	}
+
 //	public void close()
 //	{
 //		try {
@@ -219,354 +321,8 @@ public class Client implements portInformation{
 //	}
 //	
 
-//
-//	public class ProfessorControl implements ActionListener
-//	{
-//		public void getSubmissions()
-//		{
-//			int assignID = ((Assignment) professorWindow.getAssignmentBox().getSelectedItem()).getId();
-//			try {
-//				out.writeObject(new String("GET SUBMISSIONS ("+ assignID + ")"));
-//				out.flush();
-//				ArrayList<Submission> subs = (ArrayList<Submission>)in.readObject();
-//				if(subs == null){
-//					JOptionPane.showMessageDialog(professorWindow, "No submissions yet", null, JOptionPane.INFORMATION_MESSAGE);
-//					return;
-//				}
-//				professorWindow.setSubmissions(subs);
-//				
-//			} catch (IOException | ClassNotFoundException e1) {e1.printStackTrace();}
-//		}
-//
-//		public void updateEnrolledSTudents() {
-//			ArrayList<Student> students = new ArrayList<Student>();
-//			try {
-//				out.writeObject(new String(	professorWindow.getCourseNameLabel().getText() + " UPDATE STUDENTS FOR COURSE"));
-//				out.flush();
-//				students = (ArrayList<Student>) in.readObject();
-//				if(students != null)
-//					professorWindow.addEnrolledStudents(students);
-//				
-//			} catch (IOException | ClassNotFoundException e1) {
-//				System.out.println("Problem getting Enrolled Students");
-//				e1.printStackTrace();
-//			}
-//		}
-//
-//		
-//		@Override
-//		public void actionPerformed(ActionEvent e) 
-//		{
-//			if(e.getSource() == professorWindow.getCourseActive())
-//			{
-//				if(professorWindow.getCourseActive().isSelected())
-//				{
-//					try {
-//						out.writeObject(new String("UPDATE COURSE ACTIVE 1"));
-//						Course course = professorWindow.getCourseInList();
-//						course.setActive(true);
-//						out.writeObject(course);
-//						out.flush();
-//					} catch (IOException e1) {e1.printStackTrace();}
-//										
-//				}
-//				else if(!professorWindow.getCourseActive().isSelected())
-//				{
-//					try {
-//						out.writeObject(new String("UPDATE COURSE ACTIVE 0"));
-//						Course course = professorWindow.getCourseInList();
-//						course.setActive(false);
-//						out.writeObject(course);
-//						out.flush();
-//					} catch (IOException e1) {e1.printStackTrace();}
-//				}
-//
-//			}
-//	
-//			if(e.getSource() == professorWindow.getViewCourse())
-//			{
-//				professorWindow.setCourseInfo();
-//				professorWindow.getEnrolledStudents().removeAllElements(); 
-//				updateEnrolledSTudents();
-//			}
-//			
-//			
-//			if(e.getSource() == professorWindow.getCreateCourse())
-//			{
-//				professorWindow.createCourse();
-//			}
-//			if(e.getSource() == professorWindow.getMakeCourse())
-//			{
-//				Course course = professorWindow.makeCourse(user.getId());
-//
-//				try {							
-//					out.writeObject(course);
-//					updateCoursesProf(user);
-//				} catch (IOException | ClassNotFoundException e1) {
-//					e1.printStackTrace();
-//				}
-//				professorWindow.setCourseInfo(course);
-//				
-//				updateEnrolledSTudents();
-//				
-//			}
-//			
-//			if(e.getSource() == professorWindow.getAssignmentBox())
-//			{
-//				professorWindow.updateAssignment();
-//			}
-//			
-//			if(e.getSource() == professorWindow.getAssignActive())
-//			{
-//				if(professorWindow.getAssignActive().isSelected())
-//				{
-//					((Assignment) professorWindow.getAssignmentBox().getSelectedItem()).setActive(true);
-//					try {
-//						out.writeObject(new String("UPDATE ASSIGNMENT ACTIVE 1"));
-//						Assignment assignment = professorWindow.getAssignmentFromCourse();
-//						out.writeObject(assignment);
-//						out.flush();
-//					} catch (IOException e1) {e1.printStackTrace();}
-//				}
-//				else if(!professorWindow.getAssignActive().isSelected())
-//				{
-//					((Assignment) professorWindow.getAssignmentBox().getSelectedItem()).setActive(false);
-//					try {
-//						out.writeObject(new String("UPDATE ASSIGNMENT ACTIVE 0"));
-//						Assignment assignment = professorWindow.getAssignmentFromCourse();
-//						out.writeObject(assignment);
-//						out.flush();
-//					} catch (IOException e1) {e1.printStackTrace();}
-//				}
-//			}
-//			
-//			if(e.getSource() == professorWindow.getUploadAssign())
-//			{
-//				professorWindow.openDropBox();
-//				professorWindow.setDropBoxActionListener(this);
-//			}
-//			if(e.getSource() == professorWindow.getSubmitAssign())
-//			{
-//				File file = professorWindow.submitFile();
-//				if(file == null)
-//				{
-//					JOptionPane.showMessageDialog(professorWindow, "No file chosen", null, JOptionPane.ERROR_MESSAGE);
-//					return;
-//				}
-//				String extension = "";
-//
-//				int i = file.getPath().lastIndexOf('.');
-//				if (i > 0) 
-//				    extension = file.getPath().substring(i+1);
-//				
-//				long length = file.length();
-//				byte[] content = new byte[(int) length]; // Converting Long to Int
-//				try {
-//					FileInputStream fis = new FileInputStream(file);
-//					BufferedInputStream bos = new BufferedInputStream(fis);
-//					bos.read(content, 0, (int)length);
-//					out.writeObject(content);
-//					out.flush();
-//					out.writeObject(professorWindow.getAssignmentBox().getSelectedItem());
-//					out.flush();
-//					out.writeObject(new String(extension));
-//					professorWindow.getDropboxFrame().dispose();
-//				} catch (IOException e1) {e1.printStackTrace();}
-//				
-//			}
-//			
-//			if(e.getSource() == professorWindow.getSearchStudents()) 
-//			{
-//				professorWindow.getAllStudentsList().removeAllElements();
-//				
-//				if(professorWindow.getRadioID().isSelected()) {
-//					try {
-//						out.writeObject(new String(professorWindow.getSearch_feild().getText()) + " SEARCH STUDENT ID"  );
-//						out.flush();
-//						Object obj = in.readObject();
-//				
-//						if(obj instanceof Student)
-//						{
-//							Student s = (Student) obj;
-//							professorWindow.showStudentSearch(s);
-//						}
-//						else
-//						{
-//							professorWindow.SearchStudentError();
-//						}
-//						
-//					} catch (IOException e1) {
-//						System.out.println("Problem Searcing ID");
-//						e1.printStackTrace();
-//					} catch (ClassNotFoundException e1) {
-//						System.out.println("Problem Searcing ID");
-//						e1.printStackTrace();
-//					} 
-//
-//
-//				}
-//
-//				else if(professorWindow.getRadioLastName().isSelected()) {
-//					try {
-//						out.writeObject(new String(professorWindow.getSearch_feild().getText()) + " SEARCH STUDENT LAST");
-//						out.flush();
-//						Object obj = in.readObject();
-//		
-//						if(obj instanceof Student)
-//						{
-//							Student s = (Student) obj;
-//							professorWindow.showStudentSearch(s);
-//						}
-//						else
-//							professorWindow.SearchStudentError();
-//					} catch (IOException e2) {
-//						System.out.println("Problem Searcing Last Name");
-//						e2.printStackTrace();
-//					} catch (ClassNotFoundException e2) {
-//						System.out.println("Problem Searcing Last Name");
-//						e2.printStackTrace();
-//					} 
-//
-//					
-//
-//				}
-//				else 
-//					JOptionPane.showMessageDialog(professorWindow.getContentPane(),
-//						    "Please select either 'Student Last Name' or Student ID' for search parameters.");
-//			}
-//			
-//			if(e.getSource() == professorWindow.getBtnEnroll()) {
-//				Student enrollDb = professorWindow.enrollThisStudent();
-//				if(enrollDb != null)
-//				{	
-//					String enrollClass = new String(professorWindow.getCourseNameLabel().getText());
-//					try {
-//						out.writeObject(new String(enrollClass + " " + enrollDb.getId() + "  ENROLL STUDENT"));
-//						out.flush();
-//					} catch (IOException e1) {
-//						System.out.println("Problem enrolling student in DB");
-//						e1.printStackTrace();
-//					}
-//				}
-//			}
-//			
-//
-//			if(e.getSource() == professorWindow.getBtnUnenroll()) {
-//				Student unenrollDb = professorWindow.unenrollThisStudent();
-//				String unenrollClass = new String (professorWindow.getCourseNameLabel().getText());
-//				try {
-//					out.writeObject(new String(unenrollClass + " " + unenrollDb.getId() + "  UNENROLL STUDENT"));
-//					out.flush();
-//				} catch (IOException e1) {
-//					System.out.println("Problem unenrolling student in DB");
-//					e1.printStackTrace();
-//				}
-//			}
-//			
-//			if(e.getSource() == professorWindow.getViewSubmissions())
-//			{
-//				getSubmissions();
-//			}
-//			
-//			if(e.getSource() == professorWindow.getViewSubmission())
-//			{
-//				try {
-//					out.writeObject(new String("GET STUDENT SUBMISSION"));
-//					Submission s = professorWindow.getSubmissionList().getSelectedValue();
-//					out.writeObject(s);
-//					byte[] content = (byte[])in.readObject();
-//					if(content == null)
-//					{
-//						JOptionPane.showInputDialog(professorWindow, "ERROR: NO FILE FOUND", null, JOptionPane.ERROR_MESSAGE);
-//						return;
-//					}
-//					else {
-//						String extension = (String)in.readObject();
-//						File newFile = new File("assignmentDownloads" + "\\\\" +"Assignment" + s.getAssignmentID() + "_" +
-//												"StudentID" + s.getStudent().getId()+"." + extension);
-//						if(! newFile.exists())
-//							newFile.createNewFile();
-//						FileOutputStream writer = new FileOutputStream(newFile);
-//						BufferedOutputStream bos = new BufferedOutputStream(writer);
-//						bos.write(content);
-//						bos.close();
-//						Desktop desktop = Desktop.getDesktop();
-//						desktop.open(newFile);
-//					}
-//				} catch (IOException | ClassNotFoundException e1) {e1.printStackTrace();}
-//			}
-//			
-//			if(e.getSource() == professorWindow.getGradeButton())
-//			{
-//				if(professorWindow.getSubmissionList().isSelectionEmpty())
-//				{
-//					JOptionPane.showMessageDialog(professorWindow, "No submission selected", null, JOptionPane.ERROR_MESSAGE);
-//					return;
-//				}
-//				professorWindow.createGradeWindow();
-//				professorWindow.setGradeActionListener(this);
-//			}
-//			if(e.getSource() == professorWindow.getGradeSubmitButton())
-//			{
-//				Submission sub = professorWindow.getGrade();
-//				if(sub == null) {
-//					JOptionPane.showMessageDialog(professorWindow, "Grade must be between 0-100", null, JOptionPane.ERROR_MESSAGE);
-//					return;
-//				}
-//				try {
-//					out.writeObject(new String("UPDATE GRADE"));
-//					out.flush();
-//					out.writeObject(sub);
-//					out.flush();
-//				} catch (IOException e1) {e1.printStackTrace();}
-//				getSubmissions();
-//				professorWindow.getGradeWindow().dispose();
-//			}
-//			
-//			if(e.getSource() == professorWindow.getEmailbtn())
-//			{
-//				if(professorWindow.getCourseList().isSelectionEmpty()) {
-//					JOptionPane.showMessageDialog(professorWindow, "No Course selected", null, JOptionPane.ERROR_MESSAGE);
-//					return;
-//				}
-//				if(userPass == null)
-//				{
-//					JPasswordField pass = new JPasswordField();
-//					int option = JOptionPane.showConfirmDialog(professorWindow, pass, "Enter Gmail Password", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-//					if(option == JOptionPane.OK_OPTION)
-//						userPass = pass.getText();
-//					else
-//						return;
-//					
-//					try {
-//						out.writeObject(new String("CREATE EMAIL HELPER"));
-//						out.flush();
-//						out.writeInt(user.getId());
-//						out.flush();
-//						out.writeObject(new String(userPass));
-//						out.flush();
-//					} catch (IOException e1) {e1.printStackTrace();}
-//				}
-//				professorWindow.openEmail();
-//				professorWindow.getButtonSendEmail().addActionListener(this);
-//				
-//			}
-//			
-//			if(e.getSource() == professorWindow.getButtonSendEmail())
-//			{
-//				Email email = new Email(professorWindow.getEmailSubject().getText(),professorWindow.getEmailBody().getText(),
-//				professorWindow.getCourseList().getSelectedValue().getCourseId(),1);
-//				try {
-//					out.writeObject(email);
-//				} catch (IOException e1) {e1.printStackTrace();}
-//				professorWindow.getEmailWindow().dispose();
-//			}
-//			
-//			
-//		}
-//		
-//	}
-//	
+
+
 //	public class StudentControl implements ActionListener
 //	{
 //		public void setCourseContent()
