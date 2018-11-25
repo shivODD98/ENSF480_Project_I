@@ -26,6 +26,7 @@ import java.awt.Color;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.awt.Font;
 
 public class RegisteredBuyerWindow implements ListSelectionListener {
 
@@ -46,7 +47,7 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 	JRadioButton rdbtnDebit;
 	JRadioButton rdbtnCredit;
 	ButtonGroup group;
-
+	
 	public RegisteredBuyerWindow() {
 		initialize();
 		orderButton.setEnabled(false);
@@ -73,7 +74,8 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 		rightPannel.setLayout(new BorderLayout(0, 0));
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane.setBackground(new Color(255, 51, 51));
+		tabbedPane.setFont(new Font("Tahoma", Font.PLAIN, 31));
+		tabbedPane.setBackground(Color.LIGHT_GRAY);
 		rightPannel.add(tabbedPane, BorderLayout.CENTER);
 		
 		JPanel documentsPanel = new JPanel();
@@ -81,6 +83,7 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 		documentsListModel = new DefaultListModel<Document>();
 		documentsPanel.setLayout(new BorderLayout(0, 0));
 		documentsList = new JList<Document>(documentsListModel);
+		documentsList.setFont(new Font("Tahoma", Font.PLAIN, 31));
 		documentsPanel.add(documentsList);
 		
 		JPanel promotionListPanel = new JPanel();
@@ -167,13 +170,13 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 	public void createOrderWindow(String title, Double price) {
 		orderFrame = new JFrame("Order");
 		orderFrame.setBounds(100, 100, 550, 359);
-		orderFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		orderFrame.getContentPane().setLayout(null);
 		
 		group = new ButtonGroup();
 		
 		JLabel placeOrderLabel = new JLabel("Place Order For "+title);
 		placeOrderLabel.setBounds(0, 0, 524, 26);
+		placeOrderLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		orderFrame.getContentPane().add(placeOrderLabel);
 		
 		JPanel panel = new JPanel();
@@ -219,8 +222,6 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 		
 		orderFrame.setVisible(true);
 	}
-
-
 
 	
 	public PaymentInfo createOrder(Document doc) {

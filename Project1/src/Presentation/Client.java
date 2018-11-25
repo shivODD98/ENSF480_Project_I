@@ -39,6 +39,7 @@ public class Client implements portInformation{
 	private Socket clientSocket;
 	private OperatorWindow operatorWindow;
 	private RegisteredBuyerWindow registeredBuyerWindow;
+	private UnregisteredBuyerWindow unRegisteredBuyerWindow;
 	//private StudentWindow studentWindow;
 	//private ProfessorWindow professorWindow;
 	private User user;
@@ -148,7 +149,7 @@ public class Client implements portInformation{
 
 		try {
 			Client client = new Client();
-			client.registeredAfterLogin();
+			client.continueUnregistered();
 			//client.loginCommunicate();
 		} catch (IOException e) {e.printStackTrace();}
 		
@@ -185,6 +186,21 @@ public class Client implements portInformation{
 		docs.add(d1);docs.add(d2);docs.add(d3);docs.add(d4);
 		registeredBuyerWindow.updateDocumentsListModel(docs);
 		registeredBuyerWindow.updatePromotionsListModel(docs);
+	}
+	
+	public void continueUnregistered() {
+		loginWindow.setVisible(false);
+		unRegisteredBuyerWindow = new UnregisteredBuyerWindow();
+		unRegisteredBuyerWindow.setActionListener(new unRegisteredBuyerController());
+		
+		//get promotion and docs from server, this is test data to simulate
+		ArrayList<Document> docs = new ArrayList<Document>();
+		Document d1 = new Document(1, "title1", "james mike", "123123", "this book is pretty figgen lit my man", DocumentType.Book, 20.00);
+		Document d2 = new Document(2, "title2", "Bob Sam", "123123", "this book is pretty figgen lit my man",DocumentType.Magazine, 14.00);
+		Document d3 = new Document(3, "title3", "Rya asdas", "123123", "this book is pretty figgen lit my man",DocumentType.Book,99.99);
+		Document d4 = new Document(4, "title4", "stfu", "123123", "this book is pretty figgen lit my man",DocumentType.Journal,90.00);
+		docs.add(d1);docs.add(d2);docs.add(d3);docs.add(d4);
+		unRegisteredBuyerWindow.updateDocumentsListModel(docs);
 	}
 	
 	public class LoginControl implements ActionListener
@@ -310,6 +326,53 @@ public class Client implements portInformation{
 		
 	}
 
+	public class unRegisteredBuyerController implements ActionListener{
+
+		Document docToSend;
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if(e.getSource() == unRegisteredBuyerWindow.orderButton) {
+				Document doc;
+				if((doc=unRegisteredBuyerWindow.getSelectedDoc())!=null) {
+					unRegisteredBuyerWindow.createOrderWindow(doc.getTitle(), doc.getPrice());
+					unRegisteredBuyerWindow.confirmButton.addActionListener(this);
+					docToSend = doc;
+				}
+				
+			}
+			
+			else if (e.getSource() == unRegisteredBuyerWindow.confirmButton) {
+				PaymentInfo info = unRegisteredBuyerWindow.createOrder(docToSend);
+				if(info!=null) {
+					unRegisteredBuyerWindow.orderFrame.dispose();
+					System.out.println("payment for "+ info.getDoc().getTitle());
+					//communicate with server
+				}
+			}
+			
+			else if(e.getSource() == unRegisteredBuyerWindow.registerButton) {
+				unRegisteredBuyerWindow.createRegisterWindow();
+				unRegisteredBuyerWindow.registerButtonConfirm.addActionListener(this);
+			}
+			
+			else if(e.getSource() == unRegisteredBuyerWindow.registerButtonConfirm) {
+				User newUser;
+				if((newUser = unRegisteredBuyerWindow.registerUser())!= null) {
+					unRegisteredBuyerWindow.registerFrame.dispose();
+					unRegisteredBuyerWindow.frame.dispose();
+					
+					//communcate with server to get new user
+					//set personal user as this user
+					registeredAfterLogin();
+				}
+			}
+			
+			
+		}
+		
+	}
+	
+	
 //	public void close()
 //	{
 //		try {

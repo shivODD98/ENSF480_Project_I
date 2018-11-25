@@ -51,7 +51,7 @@ public class DatabaseInterface {
 			{
 				if(result.getString("type").equals("1"))
 				{
-					return new User(result.getInt("UserID"), result.getString("Fname"), result.getString("Lname"), result.getString("Username"), result.getInt("Type"));
+					//return new User(result.getInt("UserID"), result.getString("Fname"), result.getString("Lname"), result.getString("Username"), result.getInt("Type"));
 				}
 			}
 			

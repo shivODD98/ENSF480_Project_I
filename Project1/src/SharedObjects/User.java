@@ -4,14 +4,15 @@ import java.io.Serializable;
 
 public class User implements Serializable {
 
+	private static final long serialVersionUID = 1L;
 	private int id;
 	private String firstName;
 	private String lastName;
 	private String username;
-	private int type;
+	private UserType type;
 
 	
-	public User(int id, String firstName, String lastName, String username, int type) {
+	public User(int id, String firstName, String lastName, String username, UserType type) {
 		setId(id);
 		setFirstName(firstName);
 		setLastName(lastName);
@@ -76,12 +77,12 @@ public class User implements Serializable {
 	}
 
 
-	public int getType() {
+	public UserType getType() {
 		return type;
 	}
 
 
-	public void setType(int type) {
+	public void setType(UserType type) {
 		this.type = type;
 	}
 	
