@@ -4,6 +4,13 @@ import java.util.ArrayList;
 
 import SharedObjects.Document;
 
+/**
+ * when NotifySingleton is created, updateList must be called atleast once to
+ * load in all promotions
+ * 
+ * @author danielheyns
+ *
+ */
 public class NotifySingleton implements Subject {
 
 	private ArrayList<Observer> observers;
@@ -13,7 +20,6 @@ public class NotifySingleton implements Subject {
 	private NotifySingleton() {
 		observers = new ArrayList<Observer>();
 		documents = new ArrayList<Document>();
-		updateList();
 	}
 
 	public static NotifySingleton getInstance() {
@@ -35,8 +41,8 @@ public class NotifySingleton implements Subject {
 
 	}
 
-	public void updateList() {
-		// use DB Helper to update document list
+	public void updateList(DocsController docController) {
+		documents = new ArrayList<Document>(docController.getPromotions());
 		for (int i = 0; i < observers.size(); i++)
 			observers.get(i).update();
 	}
@@ -44,6 +50,14 @@ public class NotifySingleton implements Subject {
 	public void display() {
 		for (int i = 0; i < documents.size(); i++) {
 			System.out.println(documents.get(i).toString());
+		}
+	}
+
+	private void removeNullObservers() {
+		for (int i = 0; i < observers.size(); i++) {
+			if (observers.get(i) == null) {
+				observers.remove(i);
+			}
 		}
 	}
 
