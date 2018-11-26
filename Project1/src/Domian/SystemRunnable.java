@@ -53,10 +53,11 @@ public class SystemRunnable implements Runnable, Observer {
 
 				// Check Login
 				if (obj instanceof LoginInfo) {
+					System.out.println("in login");
 					// call method that creates LoginController and does the login shit
 					LoginController lc = new LoginController(DBhelper);//, (LoginInfo) obj, socketOut);
 					//lc.executeMethod();
-					lc.login((LoginInfo)obj);		
+					socketOut.writeObject(lc.login((LoginInfo)obj));		
 				}
 				
 				if(obj instanceof String) {
@@ -80,21 +81,21 @@ public class SystemRunnable implements Runnable, Observer {
 						DocsController dc = new DocsController(DBhelper);
 						dc.addPromotion(((Document)doc).getISBN());
 					}
-					if(((String)obj).contains("ADD THIS DOCUMENTS")) {
+					if(((String)obj).contains("ADD THIS DOCUMENT")) {
 						Document doc = (Document) socketIn.readObject(); 
 						System.out.println(((Document)doc).getISBN());
 						DocsController dc = new DocsController(DBhelper);
 						dc.addDocument(doc);
 						//might have to write all docs and promotion back
 					}
-					if(((String)obj).contains("DELETE THIS DOCUMENTS")) {
+					if(((String)obj).contains("DELETE THIS DOCUMENT")) {
 						Document doc = (Document) socketIn.readObject(); 
 						System.out.println(((Document)doc).getISBN());
 						DocsController dc = new DocsController(DBhelper);
 						dc.deleteDocument(((Document)doc).getISBN());
 						//might have to write all docs and promotion back
 					}
-					if(((String)obj).contains("UPDATE THIS DOCUMENTS")) {
+					if(((String)obj).contains("UPDATE THIS DOCUMENT")) {
 						Document doc = (Document) socketIn.readObject(); 
 						System.out.println(((Document)doc).getISBN());
 						DocsController dc = new DocsController(DBhelper);
