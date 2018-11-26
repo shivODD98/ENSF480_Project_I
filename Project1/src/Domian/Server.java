@@ -32,6 +32,7 @@ public class Server implements portInformation{
 		//sqlHelper = new JDBCHelper();
 		//fileHelper = new FileHelper();
 		DBhelper = new DatabaseInterface();
+		NotifySingleton.getInstance().updateList(new DocsController(new DatabaseInterface()));
 		try {
 			System.out.println(InetAddress.getLocalHost());
 			serverSocket = new ServerSocket(PORT_NUMBER);
