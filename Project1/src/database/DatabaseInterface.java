@@ -60,6 +60,10 @@ public class DatabaseInterface {
 					return new User(result.getInt("UserID"), result.getString("Fname"), result.getString("Lname"),
 							result.getString("Username"), UserType.RegisteredBuyer);
 				}
+				if (result.getString("type").equals("2")) {
+					return new User(result.getInt("UserID"), result.getString("Fname"), result.getString("Lname"),
+							result.getString("Username"), UserType.Operator);
+				}
 			} else
 				return null;
 
@@ -334,7 +338,7 @@ public class DatabaseInterface {
 	}
 
 	public ArrayList<Document> getAllDocuments() {
-		String sql = "SELECT * FROM document";
+		String sql = "SELECT * FROM documents";
 		ArrayList<Document> docs = new ArrayList<Document>();
 		try {
 			statement = jdbc_connection.createStatement();
@@ -369,7 +373,7 @@ public class DatabaseInterface {
 	}
 
 	public ArrayList<Document> getAllPromotions() {
-		String sql = "SELECT * FROM document WHERE Promotion=1";
+		String sql = "SELECT * FROM documents WHERE Promotion=1";
 		ArrayList<Document> docs = new ArrayList<Document>();
 		try {
 			statement = jdbc_connection.createStatement();
@@ -433,24 +437,41 @@ public class DatabaseInterface {
 		return false;
 	}
 
-	public Boolean placePayment(PaymentInfo pay) {
+	public double getDocPrice(int ISBN) {
+		String sql = "SELECT * FROM documents WHERE ISBN='"+ ISBN + "';";
+		try {
+			statement = jdbc_connection.createStatement();
+			ResultSet result = statement.executeQuery(sql);
+
+			result.beforeFirst();
+			if (result.first()) {
+				return result.getDouble("Price");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+	
+	
+	public Boolean placePayment(PaymentInfo pay, double sum) {
 
 		String sql = null;
 		try {
 			if (pay.getType() == PaymentType.Cash) {
 				sql = "INSERT INTO receipt (UserID, BookID, SumAmount, PMethod) "
 						+ "VALUES((SELECT UserID FROM users WHERE UserID='" + pay.getId() + "')," + "'"
-						+ pay.getDoc().getISBN() + "'," + "'" + pay.getSum() + "'," + "'" + "CASH" + "'" + ");";
+						+ pay.getDoc().getISBN() + "'," + "'" + sum + "'," + "'" + "CASH" + "'" + ");";
 
 //				"SELECT UserID FROM users WHERE UserID='" + pay.getId()"'" 
 			} else if (pay.getType() == PaymentType.Credit) {
 				sql = "INSERT INTO receipt (UserID,BookID,SumAmount,PMethod)"
 						+ "VALUES((SELECT UserID FROM users WHERE UserID='" + pay.getId() + "')," + "'"
-						+ pay.getDoc().getISBN() + "'," + "'" + pay.getSum() + "'," + "'" + "DEBIT" + "'" + ");";
+						+ pay.getDoc().getISBN() + "'," + "'" + sum + "'," + "'" + "DEBIT" + "'" + ");";
 			} else if (pay.getType() == PaymentType.Credit) {
 				sql = "INSERT INTO receipt (UserID,BookID,SumAmount,PMethod)"
 						+ "VALUES((SELECT UserID FROM users WHERE UserID='" + pay.getId() + "')," + "'"
-						+ pay.getDoc().getISBN() + "'," + "'" + pay.getSum() + "'," + "'" + "CREDIT" + "'" + ");";
+						+ pay.getDoc().getISBN() + "'," + "'" + sum + "'," + "'" + "CREDIT" + "'" + ");";
 			}
 
 			statement = jdbc_connection.createStatement();
@@ -500,7 +521,7 @@ public class DatabaseInterface {
 
 		if (testAddDoc) {
 			Document d = new Document(1, "blad", "shivODD98", "Shit book", "filepath", DocumentType.Book, 69.99);
-			PaymentInfo info = new PaymentInfo(1, PaymentType.Cash, new Date(0), d, 69.99);
+			//PaymentInfo info = new PaymentInfo(1, PaymentType.Cash, new Date(0), d, 69.99);
 			// db.placePayment(info);
 			db.deletePayment(2);
 		}

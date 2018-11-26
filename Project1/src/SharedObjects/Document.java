@@ -1,7 +1,10 @@
 package SharedObjects;
 
-public class Document {
+import java.io.Serializable;
 
+public class Document implements Serializable{
+
+	private static final long serialVersionUID = 1L;
 	private int ISBN;
 	private String title;
 	private String author;

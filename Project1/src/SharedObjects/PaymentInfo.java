@@ -3,18 +3,19 @@ package SharedObjects;
 import java.util.Date;
 
 public class PaymentInfo {
+	private int receiptId;
 	private PaymentType type;
 	private int Userid;
 	private Date date;
 	private Document doc;
-	private double sum;
+//	private double sum;
 	
-	public PaymentInfo(int Userid, PaymentType type, Date date, Document doc, double sum) {
+	public PaymentInfo(int Userid, PaymentType type, Date date, Document doc) {
 		setId(Userid);
 		setType(type);
 		setDate(date);
 		setDoc(doc);
-		setSum(sum);
+//		setSum(sum);
 	}
 
 	public PaymentType getType() {
@@ -49,11 +50,19 @@ public class PaymentInfo {
 		this.doc = doc;
 	}
 
-	public double getSum() {
-		return sum;
+	public int getReceiptId() {
+		return receiptId;
 	}
 
-	public void setSum(double sum) {
-		this.sum = sum;
+	public void setReceiptId(int receiptId) {
+		this.receiptId = receiptId;
 	}
+
+//	public double getSum() {
+//		return sum;
+//	}
+//
+//	public void setSum(double sum) {
+//		this.sum = sum;
+//	}
 }
