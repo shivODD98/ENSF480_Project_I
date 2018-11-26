@@ -27,6 +27,11 @@ public class DocsController {
 	public Document getDocument(int id) {
 		return DBhelper.getDocument(id);
 	}
+	public Document getDocumentWithContent(int id) {
+		Document toreturn = DBhelper.getDocument(id);
+		toreturn.setBytes(createByteArray(new File(toreturn.getFilePath())));
+		return toreturn;
+	}
 
 	public void updateDocument(Document doc) {
 		deleteDocument(doc.getISBN());
@@ -34,15 +39,18 @@ public class DocsController {
 	}
 
 	public void deleteDocument(int id) {
+		File file = new File(DBhelper.getDocument(id).getFilePath());
+		if(file.delete()) {
+			System.out.println("File Deleted");
+		}
 		DBhelper.deleteDocument(id);
 	}
 
 	public void addDocument(Document doc) {
-		DBhelper.addDocument(doc);
 		try {
 			File file = new File(doc.getTitle());
 			FileOutputStream fileOutputStream = new FileOutputStream(file);
-			// fileOutputStream.write(doc.getByte());
+			fileOutputStream.write(doc.getBytes());
 			fileOutputStream.close();
 
 			 File copy = new File("/Users/danielheyns/Desktop/Server/Documents/" +
@@ -55,6 +63,7 @@ public class DocsController {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		DBhelper.addDocument(doc);
 	}
 
 	public ArrayList<Document> getPromotions() {

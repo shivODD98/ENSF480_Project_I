@@ -9,7 +9,7 @@ public class Document {
 	private String description;
 	private DocumentType type;
 	private Double price;
-	
+	private byte[] bytearray;
 	public Document() {setISBN(-1); setTitle(null); setAuthor(null);setFilePath(null);setPrice(null);}
 	
 	public Document(int ISBN, String title, String author, String filePath, String description, DocumentType type, Double price) {
@@ -60,6 +60,12 @@ public class Document {
 
 	public void setISBN(int iSBN) {
 		ISBN = iSBN;
+	}
+	public byte[] getBytes() {
+		return bytearray;
+	}
+	public void setBytes(byte[] b) {
+		bytearray = b;
 	}
 	
 	public String simpleString() {
