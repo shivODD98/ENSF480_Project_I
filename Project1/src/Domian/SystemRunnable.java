@@ -52,6 +52,11 @@ public class SystemRunnable implements Runnable{
 					lc.executeMethod();
 				}
 				
+				if(obj instanceof String) {
+					if(((String)obj).contains("GET ALL DOCS"));
+					
+				}
+				
 				
 				
 				
