@@ -40,10 +40,12 @@ public class DocsController {
 
 	public void addPromotion(int id) {
 		DBhelper.addDocPromotion(id);
+		NotifySingleton.getInstance().updateList(this);
 	}
 
 	public void removePromotion(int id) {
 		DBhelper.removeDocPromotion(id);
+		NotifySingleton.getInstance().updateList(this);
 	}
 
 }

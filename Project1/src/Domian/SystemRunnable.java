@@ -70,7 +70,7 @@ public class SystemRunnable implements Runnable, Observer {
 
 	@Override
 	public void update() {
-		// send list of promotion items from NotifySingleton to User
+		// send list of promotion items from NotifySingleton to User or notify user somehow that the list has changed
 
 	}
 
