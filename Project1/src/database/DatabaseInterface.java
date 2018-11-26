@@ -214,6 +214,41 @@ public class DatabaseInterface {
 		return null;
 	}
 	
+	public Boolean updateUser(User update, int ID) {
+		
+		String sql = null;
+		
+		if(update.getType()==UserType.Buyer)
+			sql = "UPDATE users SET Fname='" + update.getFirstName() + "',"
+									 +"Lname='" + update.getLastName() +  "',"
+									 +"Username='" + update.getUsername() + "',"
+									 +"Type='0' WHERE UserId='" + update.getId() + "';";
+		else if(update.getType()==UserType.RegisteredBuyer)
+			sql = "UPDATE users SET Fname='" + update.getFirstName() + "',"
+					 +"Lname='" + update.getLastName() +  "',"
+					 +"Username='" + update.getUsername() + "',"
+					 +"Type='1' WHERE UserId='" + update.getId() + "';";
+		else if(update.getType()==UserType.RegisteredBuyer)
+			sql = "UPDATE users SET Fname='" + update.getFirstName() + "',"
+					 +"Lname='" + update.getLastName() +  "',"
+					 +"Username='" + update.getUsername() + "',"
+					 +"Type='1' WHERE UserId='" + update.getId() + "';";
+		
+		try {
+			statement = jdbc_connection.createStatement();
+			int result = statement.executeUpdate(sql);
+			if(result == 1)
+				return true;
+		}
+		catch(SQLException e) {
+			e.printStackTrace();
+		}
+		
+		
+		return false;
+									 
+	}
+	
 	public ArrayList<User> getAllUsers(){
 		String sql = "SELECT * FROM users WHERE Type=1"; 
 		ArrayList<User> users = new ArrayList<User>();

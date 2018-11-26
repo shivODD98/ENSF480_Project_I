@@ -43,11 +43,25 @@ public class LoginController {
 
 	
 	private void registerUser() {
-		
+		try {
+			socketOut.writeObject(DBhelper.addRegisterBuyer(newUser, pass));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void unregisterUser() {
-		
+		try {
+			if(DBhelper.deleteUserID(ID)) {
+				socketOut.writeObject("User Was Succesfully Deleted..");
+			}
+			else
+				socketOut.writeObject("User Could Not Be Deleted...");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public ObjectOutputStream getSocketOut() {
