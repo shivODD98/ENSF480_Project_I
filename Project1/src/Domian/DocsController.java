@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 
 import SharedObjects.*;
@@ -44,16 +45,13 @@ public class DocsController {
 			// fileOutputStream.write(doc.getByte());
 			fileOutputStream.close();
 
-			// File copy = new File("/Users/danielheyns/Desktop/Server/Assignments/" +
-			// doc.getCourseID() + "/" + .getId() + "."
-			// + getExtension(assign.getPath())); This is fucked up cuz im on mac and you
-			// guys are on windows, from my project btw
-//		File copy = new File("C:\\Assigns\\" + assign.getCourseID() + "\\" + assign.getId() + "."
-//					+ getExtension(file.getAbsolutePath()));
-//			doc.setFilePath(copy.getAbsolutePath());
-//			copy.getParentFile().mkdir();
-//			copy.createNewFile();
-//			copyFile(file, copy);
+			 File copy = new File("/Users/danielheyns/Desktop/Server/Documents/" +
+			 doc.getAuthor() + "/" + doc.getTitle() + "."
+			 + getExtension(doc.getFilePath()));
+			doc.setFilePath(copy.getAbsolutePath());
+			copy.mkdirs();
+			copy.createNewFile();
+			copyFile(file, copy);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -96,6 +94,31 @@ public class DocsController {
 
 		String ext[] = path.split("\\.");
 		return ext[ext.length - 1];
+	}
+	
+	/**
+	 * copies the contents of one file to another, overwriting all previous data
+	 * @param sourceFile is the file to be copied
+	 * @param destFile is the file to be copied to
+	 * @throws IOException when the source or destfiles could not be found
+	 */
+	@SuppressWarnings("resource")
+	private static void copyFile(File sourceFile, File destFile) throws IOException {
+		FileChannel source = null;
+		FileChannel destination = null;
+
+		try {
+			source = new FileInputStream(sourceFile).getChannel();
+			destination = new FileOutputStream(destFile).getChannel();
+			destination.transferFrom(source, 0, source.size());
+		} finally {
+			if (source != null) {
+				source.close();
+			}
+			if (destination != null) {
+				destination.close();
+			}
+		}
 	}
 
 }
