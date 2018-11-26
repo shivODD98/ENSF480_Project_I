@@ -74,13 +74,14 @@ public class FileSystemInterface {
 			fileOutputStream.write(doc.getBytes());
 			fileOutputStream.close();
 
-			File copy = new File("/Users/danielheyns/Desktop/Server/Documents/" + doc.getAuthor() + "/" + doc.getTitle()
+			File copy = new File("/Documents/" + doc.getAuthor() + "/" + doc.getTitle()
 					+ "." + getExtension(doc.getFilePath()));
 			doc.setFilePath(copy.getAbsolutePath());
 			copy.mkdirs();
 			copy.createNewFile();
 			copyFile(file, copy);
-		} catch (IOException e) {
+			file.delete();
+;		} catch (IOException e) {
 			e.printStackTrace();
 		}
 

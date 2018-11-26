@@ -35,9 +35,6 @@ public class SystemRunnable implements Runnable, Observer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		subject = NotifySingleton.getInstance();
-		subject.registerObserver(this);
-		update();
 	}
 
 	@Override
@@ -55,7 +52,10 @@ public class SystemRunnable implements Runnable, Observer {
 					// call method that creates LoginController and does the login shit
 					LoginController lc = new LoginController(DBhelper);// , (LoginInfo) obj, socketOut);
 					// lc.executeMethod();
-					lc.login((LoginInfo) obj);
+					if(lc.login((LoginInfo) obj).getType()==UserType.RegisteredBuyer) {
+						subject = NotifySingleton.getInstance();
+						subject.registerObserver(this);
+					}
 				}
 
 				if (obj instanceof String) {
