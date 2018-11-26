@@ -36,7 +36,7 @@ public class SystemRunnable implements Runnable, Observer {
 			e.printStackTrace();
 		}
 		subject = NotifySingleton.getInstance();
-		NotifySingleton.getInstance().registerObserver(this);
+		subject.registerObserver(this);
 		update();
 	}
 
