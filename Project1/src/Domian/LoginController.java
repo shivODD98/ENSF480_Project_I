@@ -23,10 +23,10 @@ public class LoginController {
 			login();
 		}
 		else if(lg.getMethodFlag() == 2) {
-			
+			registerUser();
 		}
 		else if(lg.getMethodFlag() == 3) {
-			
+			unregisterUser();
 		}
 		else 
 			return;
@@ -41,6 +41,15 @@ public class LoginController {
 		}
 	}
 
+	
+	private void registerUser() {
+		
+	}
+	
+	private void unregisterUser() {
+		
+	}
+	
 	public ObjectOutputStream getSocketOut() {
 		return socketOut;
 	}

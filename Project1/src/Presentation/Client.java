@@ -149,8 +149,8 @@ public class Client implements portInformation{
 
 		try {
 			Client client = new Client();
-			client.continueUnregistered();
-			//client.loginCommunicate();
+			//client.continueUnregistered();
+			client.loginCommunicate();
 		} catch (IOException e) {e.printStackTrace();}
 		
 	}

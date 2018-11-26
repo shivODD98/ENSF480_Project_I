@@ -234,7 +234,7 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 			type = PaymentType.Debit;
 		else 
 			return null;
-		PaymentInfo info = new PaymentInfo(-1, type, new Date(), doc);
+		PaymentInfo info = new PaymentInfo(-1, type, new Date(), doc); //need to include sum
 		return info;
 	}
 	

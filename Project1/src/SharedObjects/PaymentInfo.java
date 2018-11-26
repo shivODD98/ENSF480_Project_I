@@ -4,15 +4,17 @@ import java.util.Date;
 
 public class PaymentInfo {
 	private PaymentType type;
-	private int id;
+	private int Userid;
 	private Date date;
 	private Document doc;
+	private double sum;
 	
-	public PaymentInfo(int id, PaymentType type, Date date, Document doc) {
-		setId(id);
+	public PaymentInfo(int Userid, PaymentType type, Date date, Document doc, double sum) {
+		setId(Userid);
 		setType(type);
 		setDate(date);
 		setDoc(doc);
+		setSum(sum);
 	}
 
 	public PaymentType getType() {
@@ -24,11 +26,11 @@ public class PaymentInfo {
 	}
 
 	public int getId() {
-		return id;
+		return Userid;
 	}
 
 	public void setId(int id) {
-		this.id = id;
+		this.Userid = id;
 	}
 
 	public Date getDate() {
@@ -45,5 +47,13 @@ public class PaymentInfo {
 
 	public void setDoc(Document doc) {
 		this.doc = doc;
+	}
+
+	public double getSum() {
+		return sum;
+	}
+
+	public void setSum(double sum) {
+		this.sum = sum;
 	}
 }
