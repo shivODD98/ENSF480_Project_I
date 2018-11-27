@@ -26,6 +26,7 @@ import SharedObjects.Document;
 import SharedObjects.PaymentInfo;
 import SharedObjects.PaymentType;
 import SharedObjects.User;
+import SharedObjects.UserType;
 
 import java.awt.Font;
 
@@ -180,6 +181,8 @@ public class UnregisteredBuyerWindow implements ListSelectionListener {
 		
 		confirmButton = new JButton("Confirm");
 		confirmButton.setBounds(0, 253, 524, 35);
+		confirmButton.setBackground(new Color(255, 51, 51));
+		confirmButton.setForeground(new Color(255, 255, 255));
 		orderFrame.getContentPane().add(confirmButton);
 		
 		JLabel priceLabel = new JLabel("Price: $"+String.format("%.2f", price));
@@ -260,7 +263,7 @@ public class UnregisteredBuyerWindow implements ListSelectionListener {
 			type = PaymentType.Debit;
 		else 
 			return null;
-		PaymentInfo info = new PaymentInfo(-1, type, new Date(), doc); //need to include sum
+		PaymentInfo info = new PaymentInfo(-1, type, new Date(), doc);
 		return info;
 	}
 
@@ -268,7 +271,7 @@ public class UnregisteredBuyerWindow implements ListSelectionListener {
 		if(firstnameField.getText() == "" || lastnameField.getText() == "" || emailField.getText() == "")
 			return null;
 		
-		return new User(-1, firstnameField.getText(), lastnameField.getText(), emailField.getText(), null);
+		return new User(-1, firstnameField.getText(), lastnameField.getText(), emailField.getText(), UserType.RegisteredBuyer);
 	}
 	
 	@Override

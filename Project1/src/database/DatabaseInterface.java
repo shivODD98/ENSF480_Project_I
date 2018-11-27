@@ -518,7 +518,7 @@ public class DatabaseInterface {
 						+ pay.getDoc().getISBN() + "'," + "'" + sum + "'," + "'" + "CASH" + "'" + ");";
 
 //				"SELECT UserID FROM users WHERE UserID='" + pay.getId()"'" 
-			} else if (pay.getType() == PaymentType.Credit) {
+			} else if (pay.getType() == PaymentType.Debit) {
 				sql = "INSERT INTO receipt (UserID,BookID,SumAmount,PMethod)"
 						+ "VALUES((SELECT UserID FROM users WHERE UserID='" + pay.getId() + "')," + "'"
 						+ pay.getDoc().getISBN() + "'," + "'" + sum + "'," + "'" + "DEBIT" + "'" + ");";

@@ -35,7 +35,7 @@ public class FileSystemInterface {
 
 	}
 
-	private static String getExtension(String path) {
+	static String getExtension(String path) {
 
 		String ext[] = path.split("\\.");
 		return ext[ext.length - 1];
@@ -74,14 +74,14 @@ public class FileSystemInterface {
 			fileOutputStream.write(doc.getBytes());
 			fileOutputStream.close();
 
-			File copy = new File("C:////Users////Documents////GitHub////ENSF480_Project_I////Project1////SavedDocuments////" + doc.getAuthor() + "////" + doc.getTitle()
+			File copy = new File("C:////Users////Documents////GitHub////ENSF480_Project_I////Project1////SavedDocuments////"  + doc.getTitle()
 					+ "." + getExtension(doc.getFilePath()));
 			doc.setFilePath(copy.getAbsolutePath());
-			//copy.mkdirs();
+			//copy.mkdir();
 			copy.createNewFile();
 			copyFile(file, copy);
-//			file.delete();
-;		} catch (IOException e) {
+			file.delete();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 

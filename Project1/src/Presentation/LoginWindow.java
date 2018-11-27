@@ -83,7 +83,7 @@ public class LoginWindow extends JFrame {
 		lblaccount.setBounds(66, 302, 205, 20);
 		contentPane.add(lblaccount);
 		
-		JLabel labelUsername = new JLabel("Username (Lastname)");
+		JLabel labelUsername = new JLabel("Username");
 		labelUsername.setFont(new Font("Microsoft New Tai Lue", Font.BOLD, 17));
 		labelUsername.setBounds(66, 96, 176, 20);
 		contentPane.add(labelUsername);
@@ -107,7 +107,7 @@ public class LoginWindow extends JFrame {
 		
 		loginButton = new JButton("Login");
 		loginButton.setForeground(new Color(240, 248, 255));
-		loginButton.setBackground(new Color(70, 130, 180));
+		loginButton.setBackground(new Color(255, 51, 51));
 		loginButton.setFont(new Font("Microsoft New Tai Lue", Font.BOLD, 18));
 		loginButton.setBounds(66, 261, 405, 29);
 		contentPane.add(loginButton);

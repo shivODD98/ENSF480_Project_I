@@ -31,7 +31,8 @@ public class DocsController {
 	}
 	public Document getDocumentWithContent(int id) {
 		Document toreturn = DBhelper.getDocument(id);
-		toreturn.setBytes(FileHelper.createByteArray(new File(toreturn.getFilePath())));
+		toreturn.setBytes(FileHelper.createByteArray(new File("C:////Users////Documents////GitHub////ENSF480_Project_I////Project1////SavedDocuments////" 
+					+ toreturn.getTitle() + "." + FileSystemInterface.getExtension(toreturn.getFilePath()))));
 		return toreturn;
 	}
 
@@ -41,7 +42,8 @@ public class DocsController {
 	}
 
 	public void deleteDocument(int id) {
-		FileHelper.deleteDocument(new File(DBhelper.getDocument(id).getFilePath()));
+		FileHelper.deleteDocument(new File("C:////Users////Documents////GitHub////ENSF480_Project_I////Project1////SavedDocuments////" 
+										+ DBhelper.getDocument(id).getTitle() + "." + FileSystemInterface.getExtension(DBhelper.getDocument(id).getFilePath())));
 		DBhelper.deleteDocument(id);
 	}
 

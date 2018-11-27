@@ -46,7 +46,6 @@ public class SystemRunnable implements Runnable, Observer {
 
 			try {
 				Object obj = socketIn.readObject();
-
 				// Check Login
 				if (obj instanceof LoginInfo) {
 					// call method that creates LoginController and does the login shit
@@ -119,17 +118,12 @@ public class SystemRunnable implements Runnable, Observer {
 						LoginController lc = new LoginController(DBhelper);
 						lc.unregisterUser(newUser.getId());
 					}
-					if (((String) obj).contains("UPDATE USER")) {
-						User newUser = (User) socketIn.readObject();
-
-						// NEED SOME EXTRA INFO
-
-						// DBhelper.updateUser(newUser)
-					}
 					if (((String) obj).contains("BUY DOCUMENT")) {
 						PaymentInfo info = (PaymentInfo) socketIn.readObject();
 						OrderController oc = new OrderController(DBhelper);
 						oc.placeOrder(info);
+						DocsController dc = new DocsController(DBhelper);
+						socketOut.writeObject(dc.getDocumentWithContent(info.getDoc().getISBN()));
 					}
 					if(((String)obj).contains("QUIT")) {
 						if(subject!=null) subject.removeObserver(this);
@@ -155,14 +149,14 @@ public class SystemRunnable implements Runnable, Observer {
 
 	@Override
 	public void update() {
-		if (subject != null) {
-			try {
-				socketOut.writeObject(subject.documents);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-		}
+//		if (subject != null) {
+//			try {
+//				socketOut.writeObject(subject.documents);
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//			}
+//
+		//}
 	}
 
 }

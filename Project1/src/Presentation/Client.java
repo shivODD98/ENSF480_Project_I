@@ -10,6 +10,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -42,7 +43,7 @@ public class Client implements portInformation{
 	private UnregisteredBuyerWindow unRegisteredBuyerWindow;
 	//private StudentWindow studentWindow;
 	//private ProfessorWindow professorWindow;
-	private User user;
+	static private User user;
 	private String userPass;
 	private Scanner sc;
 	
@@ -55,18 +56,17 @@ public class Client implements portInformation{
 		    @Override
 		    public void windowClosing(WindowEvent we)
 		    {
-		    	//close();
+		    	close();
 		    }
 		}));
 		//clientSocket = new Socket(HOST_NAME, PORT_NUMBER);
 		
 		
-		//clientSocket = new Socket(InetAddress.getByName("10.13.67.64"), PORT_NUMBER);
-		//out = new ObjectOutputStream(clientSocket.getOutputStream());
-		//in = new ObjectInputStream(clientSocket.getInputStream());
+		clientSocket = new Socket(InetAddress.getByName("10.13.79.125"), PORT_NUMBER);
+		out = new ObjectOutputStream(clientSocket.getOutputStream());
+		in = new ObjectInputStream(clientSocket.getInputStream());
 		
 		
-		//out.writeObject(new String("HELLO BIATCH"));
 		
 	}
 	
@@ -75,71 +75,19 @@ public class Client implements portInformation{
 		while(true)
 		{
 			Object obj = in.readObject();
-			
-			if(obj instanceof String) {
-				if(((String)obj).contains("SUP FAM"))
-					System.out.println("Server Response: " + ((String)obj));
-
-				else if(((String)obj).contains("FK")){
-					System.out.println("Server Response: " + ((String)obj));
-				}
-				else {
-					System.out.println("Sorry the server dont give a fk");
-				}
-				System.out.println("Respond to server on next line: ");
-				String response = sc.nextLine();
-				out.writeObject(response);
-				out.flush();
-			}
-			
 			if(obj instanceof User) {
-
 				if(((User)obj) != null) {
-					System.out.println("User " + ((User)obj).getUsername() + " has logged in as Type " + ((User)obj).getType());
-					loginWindow.setVisible(false);
+					if(((User)obj).getType() == UserType.Operator) {
+						operatorAfterLogin();
+						break;
+					}
+					else if(((User)obj).getType() == UserType.RegisteredBuyer) {
+						registeredAfterLogin();
+						break;
+					}
 				}
-				else System.out.println("User DOES NOT EXIST");
 			}
-//			if(obj instanceof Student) 
-//			{	
-//				user = (User)obj;
-//				loginWindow.setVisible(false);
-//				studentWindow = new StudentWindow();
-//				studentWindow.setActionListeners(new StudentControl());
-//				studentWindow.setName(user.getFirstName() +" "+ user.getLastName());
-//				studentWindow.addWindowListener((new WindowAdapter()
-//				{
-//				    @Override
-//				    public void windowClosing(WindowEvent we)
-//				    {
-//				    	close();
-//				    }
-//				}));
-//				updateCoursesStudent(user);
-//				break;
-//			}
-//			else if(obj instanceof Professor) 
-//			{	
-//				user = (User) obj;
-//				loginWindow.setVisible(false);
-//				professorWindow = new ProfessorWindow();
-//				professorWindow.setActionListeners(new ProfessorControl());
-//				professorWindow.setName(user.getFirstName() + " " + user.getLastName());
-//				updateCoursesProf(user);
-//				professorWindow.addWindowListener((new WindowAdapter()
-//				{
-//				    @Override
-//				    public void windowClosing(WindowEvent we)
-//				    {
-//				    	close();
-//				    }
-//				}));
-//				break;
-//			}
-//			else
-//				loginWindow.incorrectLogin();
-//				break;
-//			
+		
 		}
 
 	}
@@ -149,58 +97,85 @@ public class Client implements portInformation{
 
 		try {
 			Client client = new Client();
-			//client.continueUnregistered();
-			client.loginCommunicate();
 		} catch (IOException e) {e.printStackTrace();}
 		
 	}
 
+	@SuppressWarnings("unchecked")
 	public void operatorAfterLogin() {
 		loginWindow.setVisible(false);
 		operatorWindow = new OperatorWindow();
+		operatorWindow.operatorFrame.addWindowListener((new WindowAdapter()
+		{
+		    @Override
+		    public void windowClosing(WindowEvent we)
+		    {
+		    	close();
+		    }
+		}));
 		operatorWindow.addActionListener(new OperatorController());
 		
 		//get promotion and docs from server, this is test data to simulate
-		ArrayList<Document> docs = new ArrayList<Document>();
-		Document d1 = new Document(1, "title1", "james mike", "123123", "this book is pretty figgen lit my man", DocumentType.Book, 20.00);
-		Document d2 = new Document(2, "title2", "Bob Sam", "123123", "this book is pretty figgen lit my man",DocumentType.Magazine, 14.00);
-		Document d3 = new Document(3, "title3", "Rya asdas", "123123", "this book is pretty figgen lit my man",DocumentType.Book,99.99);
-		Document d4 = new Document(4, "title4", "stfu", "123123", "this book is pretty figgen lit my man",DocumentType.Journal,90.00);
-		docs.add(d1);docs.add(d2);docs.add(d3);docs.add(d4);
-		operatorWindow.updateDocumentsListModel(docs);
+		try {
+			out.writeObject(new String("GET ALL DOCUMENTS"));
+			ArrayList<Document> docs = (ArrayList<Document>) in.readObject();
+			operatorWindow.updateDocumentsListModel(docs);
+			out.writeObject(new String("GET ALL PROMOTIONS"));
+			docs = (ArrayList<Document>) in.readObject();
+			operatorWindow.updatePromotionListModel(docs);
+		} catch (IOException e) {e.printStackTrace();}catch(ClassNotFoundException e) {e.printStackTrace();}
 
 
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void registeredAfterLogin() {
 		loginWindow.setVisible(false);
 		registeredBuyerWindow = new RegisteredBuyerWindow();
 		registeredBuyerWindow.addActionListener(new RegisteredBuyerController());
-		
-		//get promotion and docs from server, this is test data to simulate
-		ArrayList<Document> docs = new ArrayList<Document>();
-		Document d1 = new Document(1, "title1", "james mike", "123123", "this book is pretty figgen lit my man", DocumentType.Book, 20.00);
-		Document d2 = new Document(2, "title2", "Bob Sam", "123123", "this book is pretty figgen lit my man",DocumentType.Magazine, 14.00);
-		Document d3 = new Document(3, "title3", "Rya asdas", "123123", "this book is pretty figgen lit my man",DocumentType.Book,99.99);
-		Document d4 = new Document(4, "title4", "stfu", "123123", "this book is pretty figgen lit my man",DocumentType.Journal,90.00);
-		docs.add(d1);docs.add(d2);docs.add(d3);docs.add(d4);
-		registeredBuyerWindow.updateDocumentsListModel(docs);
-		registeredBuyerWindow.updatePromotionsListModel(docs);
+		registeredBuyerWindow.frame.addWindowListener((new WindowAdapter()
+		{
+		    @Override
+		    public void windowClosing(WindowEvent we)
+		    {
+		    	close();
+		    }
+		}));
+		try {
+			out.writeObject(new String("GET ALL DOCUMENTS"));
+			ArrayList<Document> docs = (ArrayList<Document>) in.readObject();
+			registeredBuyerWindow.updateDocumentsListModel(docs);
+			out.writeObject(new String("GET ALL PROMOTIONS"));
+			docs = (ArrayList<Document>) in.readObject();
+			registeredBuyerWindow.updatePromotionsListModel(docs);
+
+		} catch (IOException e) {e.printStackTrace();}catch(ClassNotFoundException e) {e.printStackTrace();}
+
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void continueUnregistered() {
 		loginWindow.setVisible(false);
 		unRegisteredBuyerWindow = new UnregisteredBuyerWindow();
 		unRegisteredBuyerWindow.setActionListener(new unRegisteredBuyerController());
-		
+		unRegisteredBuyerWindow.frame.addWindowListener((new WindowAdapter()
+		{
+		    @Override
+		    public void windowClosing(WindowEvent we)
+		    {
+		    	close();
+		    }
+		}));
 		//get promotion and docs from server, this is test data to simulate
-		ArrayList<Document> docs = new ArrayList<Document>();
-		Document d1 = new Document(1, "title1", "james mike", "123123", "this book is pretty figgen lit my man", DocumentType.Book, 20.00);
-		Document d2 = new Document(2, "title2", "Bob Sam", "123123", "this book is pretty figgen lit my man",DocumentType.Magazine, 14.00);
-		Document d3 = new Document(3, "title3", "Rya asdas", "123123", "this book is pretty figgen lit my man",DocumentType.Book,99.99);
-		Document d4 = new Document(4, "title4", "stfu", "123123", "this book is pretty figgen lit my man",DocumentType.Journal,90.00);
-		docs.add(d1);docs.add(d2);docs.add(d3);docs.add(d4);
-		unRegisteredBuyerWindow.updateDocumentsListModel(docs);
+		try {
+			out.writeObject(new String("GET ALL DOCUMENTS"));
+			ArrayList<Document> docs = (ArrayList<Document>) in.readObject();
+			unRegisteredBuyerWindow.updateDocumentsListModel(docs);
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		
 	}
 	
 	public class LoginControl implements ActionListener
@@ -212,26 +187,31 @@ public class Client implements portInformation{
 			{
 				LoginInfo log = loginWindow.getLoginInfo();
 				log.setMethodFlag(1);
-				try {out.writeObject(log);}	
-				catch (IOException e1) {e1.printStackTrace();}
+
+				try {
+					out.writeObject(log);
+					Object obj = in.readObject();
+					if(obj instanceof User) {
+						if(((User)obj) != null) {
+							if(((User)obj).getType() == UserType.Operator) {
+								operatorAfterLogin();
+							}
+							else if(((User)obj).getType() == UserType.RegisteredBuyer) {
+								registeredAfterLogin();
+							}
+							Client.user = (User)obj;
+							System.out.println("user id is:"+Client.user.getId());
+						}
+					}
+				}	
+				catch (IOException | ClassNotFoundException e1) {e1.printStackTrace();}
 			}
 			
-//			if(e.getSource() == loginWindow.getCreateAccount())
-//			{
-//				loginWindow.createAccountWindow();
-//				loginWindow.getCreateButton().addActionListener(this);
-//			}
-//			
-//			if(e.getSource() == loginWindow.getCreateButton())
-//			{
-//				Account user = loginWindow.getNewUser();
-//				if(user == null)
-//					return;
-//				try {
-//					out.writeObject(user);
-//				} catch (IOException e1) {e1.printStackTrace();}
-//				loginWindow.getCreateAccountWindow().dispose();
-//			}
+			if(e.getSource() == loginWindow.getCreateAccount())
+			{
+				continueUnregistered();
+			}
+
 		}
 	}
 	
@@ -242,35 +222,53 @@ public class Client implements portInformation{
 			if(e.getSource() == operatorWindow.addButton) {
 				operatorWindow.createAddWindow();
 				operatorWindow.createButton.addActionListener(this);
+				try {
+					out.writeObject(new String("ADD THIS DOCUMENT"));
+				} catch (IOException e1) {e1.printStackTrace();}
 			}
 			
 			else if(e.getSource() == operatorWindow.updateDocument) {
 				operatorWindow.createAddWindow();
 				operatorWindow.createButton.addActionListener(this);
 				operatorWindow.modifyDocument();
+				try {
+					out.writeObject(new String("UPDATE THIS DOCUMENT"));
+				} catch (IOException e1) {e1.printStackTrace();}
 			}
 			
 			else if(e.getSource() == operatorWindow.deleteButton) {
 				Document doc;
 				if((doc = operatorWindow.removeFromList()) != null)
 					System.out.println("removing "+doc.getTitle());
-				//communicate with server
+					try {
+						out.writeObject(new String("DELETE THIS DOCUMENT"));
+						out.flush();
+						out.writeObject(doc);
+					} catch (IOException e1) {e1.printStackTrace();}
 			}
 			
 			else if(e.getSource() == operatorWindow.moveToPromotionButton) {
 				if(operatorWindow.isDocumentsSelected()) {
 					Document doc;
 					if((doc = operatorWindow.addToPromotionList())!=null) {
+						try {
+							out.writeObject(new String("ADD TO PROMOTION"));
+							out.flush();
+							out.writeObject(doc);
+						} catch (IOException e1) {e1.printStackTrace();}
 						System.out.println("adding "+doc.getTitle()+" to promotion");
-						//communicate with server
 					}
 				}
 				else if(operatorWindow.isPromotionListSeleted()) {
 					Document doc;
 					doc = operatorWindow.removeFromPromotionList();
 					if(doc!=null) {
+						try {
+							out.writeObject(new String("DELETE FROM PROMOTION"));
+							out.flush();
+							out.writeObject(doc);
+						} catch (IOException e1) {e1.printStackTrace();}
 						System.out.println("removing "+doc.getTitle()+" from promotion");
-						//communicate with server
 					}
 				}
 			}
@@ -283,7 +281,26 @@ public class Client implements portInformation{
 					fc.setDialogTitle("Choose Document");
 					if(fc.showOpenDialog(open) == JFileChooser.APPROVE_OPTION) {}
 					File file = fc.getSelectedFile();
+					
+					long length = file.length();
+					byte[] content = new byte[(int)length];
+					try {
+						FileInputStream fis = new FileInputStream(file);
+						BufferedInputStream bos = new BufferedInputStream(fis);
+						bos.read(content, 0, (int)length);
+						bos.close();
+						fis.close();
+					}catch(FileNotFoundException e1) {e1.printStackTrace();}catch(IOException e2) {e2.printStackTrace();}
+					doc.setBytes(content);
+					doc.setFilePath(file.getAbsolutePath());
 					//talk to server
+					try {
+						out.flush();
+						out.writeObject(doc);
+						Document newDoc = (Document)in.readObject();
+						if(newDoc != null)
+							operatorWindow.documentsListModel.addElement(newDoc);
+					} catch (IOException e1) {e1.printStackTrace();} catch (ClassNotFoundException e1) {e1.printStackTrace();}
 					
 				}
 			}
@@ -294,7 +311,12 @@ public class Client implements portInformation{
 
 	public class RegisteredBuyerController implements ActionListener{
 
+		public String getExtension(String s) {
+			String ext[] = s.split("\\.");
+			return ext[ext.length - 1];
+		}
 		Document docToSend;
+		@SuppressWarnings("unchecked")
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == registeredBuyerWindow.orderButton) {
@@ -311,7 +333,18 @@ public class Client implements portInformation{
 				PaymentInfo info = registeredBuyerWindow.createOrder(docToSend);
 				if(info!=null) {
 					registeredBuyerWindow.orderFrame.dispose();
-					//communicate with server
+					info.setId(Client.user.getId());
+					try {
+						out.writeObject(new String("BUY DOCUMENT"));
+						out.writeObject(info);
+						Document doc = (Document)in.readObject();
+						File file = new File("paied."+getExtension(doc.getFilePath()));
+						FileOutputStream fs = new FileOutputStream(file);
+						fs.write(doc.getBytes());
+						fs.close();
+						Desktop.getDesktop().open(file);
+					} catch (IOException | ClassNotFoundException e1) {e1.printStackTrace();}
+					
 				}
 			}
 			
@@ -319,16 +352,35 @@ public class Client implements portInformation{
 				//delete user from db
 				registeredBuyerWindow.frame.dispose();
 				loginWindow.setVisible(true);
-				//loginCommunicate();
+				try {
+					out.writeObject(new String("UNREGISTER USER"));
+					out.writeObject(Client.user);
+					
+				} catch (IOException e1) {e1.printStackTrace();}
+			}
+			
+			else if(e.getSource() == registeredBuyerWindow.btnRefresh) {
+				try {
+					out.writeObject(new String("GET ALL DOCUMENTS"));
+					ArrayList<Document> docs = (ArrayList<Document>) in.readObject();
+					registeredBuyerWindow.updateDocumentsListModel(docs);
+					out.writeObject(new String("GET ALL PROMOTIONS"));
+					docs = (ArrayList<Document>) in.readObject();
+					registeredBuyerWindow.updatePromotionsListModel(docs);
+
+				} catch (IOException e1) {e1.printStackTrace();}catch(ClassNotFoundException e2) {e2.printStackTrace();}
 			}
 			
 		}
 		
 	}
 
-	public class unRegisteredBuyerController implements ActionListener{
-
+	public class unRegisteredBuyerController implements ActionListener{		
 		Document docToSend;
+		public String getExtension(String s) {
+			String ext[] = s.split("\\.");
+			return ext[ext.length - 1];
+		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() == unRegisteredBuyerWindow.orderButton) {
@@ -346,6 +398,17 @@ public class Client implements portInformation{
 				if(info!=null) {
 					unRegisteredBuyerWindow.orderFrame.dispose();
 					System.out.println("payment for "+ info.getDoc().getTitle());
+					
+					try {
+						out.writeObject(new String("BUY DOCUMENT"));
+						out.writeObject(info);
+						Document doc = (Document)in.readObject();
+						File file = new File("paied."+getExtension(doc.getFilePath()));
+						FileOutputStream fs = new FileOutputStream(file);
+						fs.write(doc.getBytes());
+						fs.close();
+						Desktop.getDesktop().open(file);
+					} catch (IOException | ClassNotFoundException e1) {e1.printStackTrace();}
 					//communicate with server
 				}
 			}
@@ -358,11 +421,20 @@ public class Client implements portInformation{
 			else if(e.getSource() == unRegisteredBuyerWindow.registerButtonConfirm) {
 				User newUser;
 				if((newUser = unRegisteredBuyerWindow.registerUser())!= null) {
+					String pass = unRegisteredBuyerWindow.passwordField.getText();
 					unRegisteredBuyerWindow.registerFrame.dispose();
 					unRegisteredBuyerWindow.frame.dispose();
 					
 					//communcate with server to get new user
-					//set personal user as this user
+					try {
+						out.writeObject(new String("ADD USER"));
+						out.flush();
+						out.writeObject(newUser);
+						out.flush();
+						out.writeObject(pass);
+						User user = (User)in.readObject();
+						Client.user = user;
+					} catch (IOException | ClassNotFoundException e1) {e1.printStackTrace();}
 					registeredAfterLogin();
 				}
 			}
@@ -372,193 +444,14 @@ public class Client implements portInformation{
 		
 	}
 	
-	
-//	public void close()
-//	{
-//		try {
-//			out.writeObject("QUIT");
-//			in.close();
-//			out.close();
-//			clientSocket.close();
-//		}catch(IOException e) {e.printStackTrace();}
-//	}
-//	
-
-
-
-//	public class StudentControl implements ActionListener
-//	{
-//		public void setCourseContent()
-//		{
-//			studentWindow.setCourseInfo();
-//			setAssignmentContent();
-//	
-//		}
-//		public void setAssignmentContent()
-//		{
-//			try {
-//				Assignment a = (Assignment) studentWindow.getAssignments().getSelectedItem();
-//				if(a == null)
-//				{
-//					studentWindow.updateAssignment(null);
-//					return;
-//				}
-//				out.writeObject(new String("GET GRADE AND COMMENT"));
-//				out.flush();
-//				out.writeInt(user.getId());
-//				out.flush();
-//				out.writeInt(a.getId());
-//				out.flush();
-//				Submission s = (Submission)in.readObject();
-//				studentWindow.updateAssignment(s);
-//			} catch (IOException | ClassNotFoundException e) {e.printStackTrace();}
-//		}
-//		
-//		@Override
-//		public void actionPerformed(ActionEvent e) 
-//		{
-//			if(e.getSource() == studentWindow.getViewCourse())
-//			{
-//				setCourseContent();
-//			}
-//			
-//			if(e.getSource() == studentWindow.getDownload())
-//			{
-//				try {
-//					Assignment a = (Assignment) studentWindow.getAssignments().getSelectedItem();
-//					if(a == null)
-//						return;
-//					out.writeObject(new String("GET ASSIGNMENT ("+a.getId()+")"));
-//					Object obj = in.readObject();
-//						byte[] content = null;
-//					if(obj instanceof byte[])
-//						content = (byte[]) obj;
-//					if(content == null)
-//						JOptionPane.showMessageDialog(studentWindow, "No assignment uploaded yet", 
-//													   null, JOptionPane.ERROR_MESSAGE);
-//				
-//					
-//					else
-//					{
-//						String extension = (String)in.readObject();
-//						File newFile = new File("assignmentDownloads" + "\\\\" + a.getId() +"." + extension);
-//						try{
-//							if(! newFile.exists())
-//								newFile.createNewFile();
-//							FileOutputStream writer = new FileOutputStream(newFile);
-//							BufferedOutputStream bos = new BufferedOutputStream(writer);
-//							bos.write(content);
-//							bos.close();
-//							} catch(IOException e2){e2.printStackTrace();}
-//						Desktop desktop = Desktop.getDesktop();
-//						desktop.open(newFile);
-//
-//					}
-//					
-//				} catch (IOException | ClassNotFoundException e1) {e1.printStackTrace();}
-//			}
-//			
-//			if(e.getSource() == studentWindow.getDropbox())
-//			{
-//				studentWindow.openDropBox();
-//				studentWindow.setDropboxActionListener(this);
-//			}
-//			
-//			if(e.getSource() == studentWindow.getSubmitAssignment())
-//			{
-//				File file = studentWindow.submitFile();
-//				if(file == null)
-//				{
-//					JOptionPane.showMessageDialog(studentWindow, "No file chosen", null, JOptionPane.ERROR_MESSAGE);
-//					return;
-//				}
-//				String extension = "";
-//
-//				int i = file.getPath().lastIndexOf('.');
-//				if (i > 0) 
-//				    extension = file.getPath().substring(i+1);
-//				
-//				long length = file.length();
-//				byte[] content = new byte[(int) length]; // Converting Long to Int
-//				try {
-//					FileInputStream fis = new FileInputStream(file);
-//					BufferedInputStream bos = new BufferedInputStream(fis);
-//					bos.read(content, 0, (int)length);
-//					out.writeObject(new String("UPLOAD SUBMISSION"));
-//					out.flush();
-//					out.writeObject(content);
-//					out.flush();
-//					out.writeObject(new String(extension));
-//					out.flush();
-//					String path = "assignmentSubmissions\\\\" + ((Assignment)studentWindow.getAssignments().getSelectedItem()).getId()
-//									+"_"+user.getId();
-//					DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd hh:mm a");
-//					Calendar cal = Calendar.getInstance();
-//					String timeStamp = dateFormat.format(cal.getTime());
-//					
-//					Submission sub = new Submission(((Assignment)studentWindow.getAssignments().getSelectedItem()).getId(),
-//							(Student)user, path, "No Comments", -1, timeStamp);
-//					out.writeObject(sub);
-//							
-//					studentWindow.getDropboxFrame().dispose();
-//				} catch (IOException e1) {e1.printStackTrace();}
-//			}
-//			
-//			if(e.getSource() == studentWindow.getAssignments())
-//			{
-//				setAssignmentContent();
-//			}
-//			
-//			if(e.getSource() == studentWindow.getRefresh())
-//			{
-//				try {
-//					updateCoursesStudent(user);
-//				} catch (ClassNotFoundException | IOException e1) {e1.printStackTrace();}
-//				setCourseContent();
-//			}
-//			
-//			if(e.getSource() == studentWindow.getEmailProf())
-//			{
-//				if(studentWindow.getCourseList().isSelectionEmpty()) {
-//					JOptionPane.showMessageDialog(studentWindow, "No Course selected", null, JOptionPane.ERROR_MESSAGE);
-//					return;
-//				}
-//				if(userPass == null)
-//				{
-//					JPasswordField pass = new JPasswordField();
-//					int option = JOptionPane.showConfirmDialog(studentWindow, pass, "Enter Gmail Password", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-//					if(option == JOptionPane.OK_OPTION)
-//						userPass = pass.getText();
-//					else
-//						return;
-//					
-//					try {
-//						out.writeObject(new String("CREATE EMAIL HELPER"));
-//						out.flush();
-//						out.writeInt(user.getId());
-//						out.flush();
-//						out.writeObject(new String(userPass));
-//						out.flush();
-//					} catch (IOException e1) {e1.printStackTrace();}
-//				}
-//				studentWindow.openEmail();
-//				studentWindow.getButtonSendEmail().addActionListener(this);
-//			}
-//			
-//			if(e.getSource() == studentWindow.getButtonSendEmail())
-//			{
-//				Email email = new Email(studentWindow.getEmailSubject().getText(),studentWindow.getEmailBody().getText(),
-//						studentWindow.getCourseList().getSelectedValue().getProfId(),0);
-//				try {
-//					out.writeObject(email);
-//					out.flush();
-//				} catch (IOException e1) {e1.printStackTrace();}
-//				studentWindow.getEmailWindow().dispose();
-//			}
-//			
-//		}
-//		
-//	}
-//	
-	
+	public void close()
+	{
+		try {
+			out.writeObject("QUIT");
+			in.close();
+			out.close();
+			clientSocket.close(); 
+		}catch(IOException e) {e.printStackTrace();}
+	}
+		
 }

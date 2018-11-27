@@ -33,7 +33,7 @@ import java.util.ArrayList;
 public class OperatorWindow implements ListSelectionListener{
 
 	//Operator
-	private JFrame operatorFrame;
+	JFrame operatorFrame;
 	JButton moveToPromotionButton;
 	JButton addButton;
 	JButton deleteButton;
@@ -56,8 +56,9 @@ public class OperatorWindow implements ListSelectionListener{
 	JTextField priceField;
     ButtonGroup typeGroupe = new ButtonGroup();
 
+	boolean isUpdate = false;
+	int modifyISBN = -1;
 	
-
 	public void addActionListener(ActionListener e)
 	{
 		moveToPromotionButton.addActionListener(e);
@@ -320,18 +321,31 @@ public class OperatorWindow implements ListSelectionListener{
 			type = DocumentType.Journal;
 		else
 			return null;
+		int ISBN;
+		if(isUpdate)
+			ISBN = modifyISBN;
+		else 
+			ISBN = -1;
 		
 		frmAddDocument.dispose();
 		
-		return new Document(-1, titleField.getText(), authorField.getText(), null, descriptionField.getText(), type, Double.parseDouble(priceField.getText()));
+		isUpdate = false;
+		modifyISBN = -1;
+		
+		return new Document(ISBN, titleField.getText(), authorField.getText(), null, descriptionField.getText(), type, Double.parseDouble(priceField.getText()));
+		
 	}
 	
 	public void modifyDocument() {
+		isUpdate = true;
 		if(isDocumentsSelected() && documentsList.getSelectedIndex() > -1) {
 			Document doc = documentsListModel.getElementAt(documentsList.getSelectedIndex());
+			documentsListModel.removeElement(doc);
 			titleField.setText(doc.getTitle());
 			authorField.setText(doc.getAuthor());
 			descriptionField.setText(doc.getDescription());
+			priceField.setText(Double.toString(doc.getPrice()));
+			modifyISBN = doc.getISBN();
 			switch(doc.getType()) {
 			case Book:
 				bookRadio.setSelected(true);

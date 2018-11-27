@@ -1,8 +1,11 @@
 package SharedObjects;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class PaymentInfo {
+public class PaymentInfo implements Serializable{
+
+	private static final long serialVersionUID = 1L;
 	private int receiptId;
 	private PaymentType type;
 	private int Userid;

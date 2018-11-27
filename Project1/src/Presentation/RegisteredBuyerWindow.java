@@ -38,6 +38,7 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 	JList<Document> promotionList;
 	JButton orderButton;
 	JButton unsubButton;
+	JButton btnRefresh;
 	
 	//orderWindow
 	JFrame orderFrame;
@@ -60,6 +61,7 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 	public void addActionListener(ActionListener e) {
 		orderButton.addActionListener(e);
 		unsubButton.addActionListener(e);
+		btnRefresh.addActionListener(e);
 	}
 
 	private void initialize() {
@@ -83,7 +85,7 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 		documentsListModel = new DefaultListModel<Document>();
 		documentsPanel.setLayout(new BorderLayout(0, 0));
 		documentsList = new JList<Document>(documentsListModel);
-		documentsList.setFont(new Font("Tahoma", Font.PLAIN, 31));
+		documentsList.setFont(new Font("Tahoma", Font.PLAIN, 26));
 		documentsPanel.add(documentsList);
 		
 		JPanel promotionListPanel = new JPanel();
@@ -92,6 +94,7 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 		promotionListModel = new DefaultListModel<Document>();
 		promotionListPanel.setLayout(new BorderLayout(0, 0));
 		promotionList = new JList<Document>(promotionListModel);
+		promotionList.setFont(new Font("Tahoma", Font.PLAIN, 26));
 		promotionListPanel.add(promotionList);
 		
 		JPanel panel_1 = new JPanel();
@@ -137,16 +140,23 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 		descriptionLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		panel.add(descriptionLabel, BorderLayout.SOUTH);
 		
+		btnRefresh = new JButton("Refresh");
+		btnRefresh.setBackground(new Color(255, 51, 51));
+		btnRefresh.setForeground(new Color(255, 255, 255));
+		panel.add(btnRefresh, BorderLayout.NORTH);
+		
 		frame.setVisible(true);
 	}
 
 	public void updateDocumentsListModel(ArrayList<Document> docs) {
+		documentsListModel.removeAllElements();
 		for(Document e: docs) {
 			documentsListModel.addElement(e);
 		}
 	}
 	
 	public void updatePromotionsListModel(ArrayList<Document> docs) {
+		promotionListModel.removeAllElements();
 		for(Document e: docs) {
 			promotionListModel.addElement(e);
 		}
@@ -214,6 +224,8 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 		
 		confirmButton = new JButton("Confirm");
 		confirmButton.setBounds(0, 253, 524, 35);
+		confirmButton.setBackground(new Color(255, 51, 51));
+		confirmButton.setForeground(new Color(255, 255, 255));
 		orderFrame.getContentPane().add(confirmButton);
 		
 		JLabel priceLabel = new JLabel("Price: $"+String.format("%.2f", price));
@@ -234,7 +246,7 @@ public class RegisteredBuyerWindow implements ListSelectionListener {
 			type = PaymentType.Debit;
 		else 
 			return null;
-		PaymentInfo info = new PaymentInfo(-1, type, new Date(), doc); //need to include sum
+		PaymentInfo info = new PaymentInfo(-1, type, new Date(), doc);
 		return info;
 	}
 	
