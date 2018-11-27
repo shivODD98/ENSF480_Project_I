@@ -132,6 +132,7 @@ public class SystemRunnable implements Runnable, Observer {
 						oc.placeOrder(info);
 					}
 					if(((String)obj).contains("QUIT")) {
+						if(subject!=null) subject.removeObserver(this);
 						socketIn.close();
 						socketOut.close();
 						break;
