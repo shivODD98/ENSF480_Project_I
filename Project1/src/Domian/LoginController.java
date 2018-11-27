@@ -35,8 +35,8 @@ public class LoginController {
 	}
 
 	
-	public void registerUser(User newUser, String pass) {
-		DBhelper.addRegisterBuyer(newUser, pass);
+	public User registerUser(User newUser, String pass) {
+		return DBhelper.addRegisterBuyer(newUser, pass);
 	}
 	
 	public void unregisterUser(int ID) {

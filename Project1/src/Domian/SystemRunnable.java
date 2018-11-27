@@ -85,7 +85,10 @@ public class SystemRunnable implements Runnable, Observer {
 						Document doc = (Document) socketIn.readObject(); 
 						System.out.println(((Document)doc).getISBN());
 						DocsController dc = new DocsController(DBhelper);
-						dc.addDocument(doc);
+						Document rt = DBhelper.addDocument(doc);
+						socketOut.writeObject(rt);
+						System.out.println(rt.getISBN());
+						//dc.addDocument(doc);
 						//might have to write all docs and promotion back
 					}
 					if(((String)obj).contains("DELETE THIS DOCUMENT")) {
@@ -98,16 +101,16 @@ public class SystemRunnable implements Runnable, Observer {
 					if(((String)obj).contains("UPDATE THIS DOCUMENT")) {
 						Document doc = (Document) socketIn.readObject(); 
 						System.out.println(((Document)doc).getISBN());
-						DocsController dc = new DocsController(DBhelper);
-						dc.deleteDocument(((Document)doc).getISBN());
-						dc.addDocument(doc);
+						//DocsController dc = new DocsController(DBhelper);
+						socketOut.writeObject(DBhelper.updateDoc(doc));
+//						dc.addDocument(doc);
 						//might have to write all docs and promotion back
 					}
 					if(((String)obj).contains("ADD USER")) {
 						User newUser = (User) socketIn.readObject();
 						String pass = (String) socketIn.readObject();
 						LoginController lc = new LoginController(DBhelper);
-						lc.registerUser(newUser,pass);
+						socketOut.writeObject(lc.registerUser(newUser,pass));
 					}
 					if(((String)obj).contains("UNREGISTER USER")) {
 						User newUser = (User) socketIn.readObject();
@@ -127,6 +130,12 @@ public class SystemRunnable implements Runnable, Observer {
 						OrderController oc = new OrderController(DBhelper);
 						oc.placeOrder(info);
 					}
+					if(((String)obj).contains("QUIT")) {
+						socketIn.close();
+						socketOut.close();
+						break;
+					}
+					
 					
 					socketOut.flush();
 				}

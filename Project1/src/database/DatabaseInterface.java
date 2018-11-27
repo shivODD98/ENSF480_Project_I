@@ -3,6 +3,8 @@ package database;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import com.mysql.jdbc.PreparedStatement;
+
 import Presentation.Client;
 
 import java.io.IOException;
@@ -130,7 +132,7 @@ public class DatabaseInterface {
 	 * @param pass    the password for the new registered buyer
 	 * @return if the operation was successful
 	 */
-	public Boolean addRegisterBuyer(User newUser, String pass) {
+	public User addRegisterBuyer(User newUser, String pass) {
 
 		String sql = null;
 
@@ -149,12 +151,16 @@ public class DatabaseInterface {
 			statement = jdbc_connection.createStatement();
 			int result = statement.executeUpdate(sql);
 			if (result == 1)
-				return true;
+				try (ResultSet generatedKeys = statement.getGeneratedKeys()){
+					if(generatedKeys.next())
+						newUser.setId(generatedKeys.getInt("ISBN"));
+					return newUser;
+				}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 
-		return false;
+		return null;
 	}
 
 	public User getUserID(int ID) {
@@ -219,11 +225,11 @@ public class DatabaseInterface {
 					 +"Lname='" + update.getLastName() +  "',"
 					 +"Username='" + update.getUsername() + "',"
 					 +"Type='1' WHERE UserId='" + update.getId() + "';";
-		else if(update.getType()==UserType.RegisteredBuyer)
+		else if(update.getType()==UserType.Operator)
 			sql = "UPDATE users SET Fname='" + update.getFirstName() + "',"
 					 +"Lname='" + update.getLastName() +  "',"
 					 +"Username='" + update.getUsername() + "',"
-					 +"Type='1' WHERE UserId='" + update.getId() + "';";
+					 +"Type='2' WHERE UserId='" + update.getId() + "';";
 		
 		try {
 			statement = jdbc_connection.createStatement();
@@ -261,36 +267,45 @@ public class DatabaseInterface {
 		return null;
 	}
 
-	public Boolean addDocument(Document Doc) {
+	public Document addDocument(Document Doc) {
 		try {
-
+			java.sql.PreparedStatement pStatement;
 			String sql = null;
 			User authorID = getUserUN(Doc.getAuthor());
+			if(authorID == null) {
+				return null;
+			}
 			if (Doc.getType() == DocumentType.Book) {
-				sql = "INSERT INTO documents (ISBN, Title, AuthorID, Description, FilePath, Type, Price) " + "VALUES ('"
-						+ Doc.getISBN() + "', '" + Doc.getTitle() + "', '" + authorID.getId() + "', '"
+				sql = "INSERT INTO documents (Title, AuthorID, Description, FilePath, Type, Price) " + "VALUES ('" 
+						+ Doc.getTitle() + "', '" + authorID.getId() + "', '"
 						+ Doc.getDescription() + "','" + Doc.getFilePath() + "','" + 1 + "','" // needs to be changed
 						+ Doc.getPrice() + "');";
 			} else if (Doc.getType() == DocumentType.Magazine) {
-				sql = "INSERT INTO documents (ISBN, Title, AuthorID, Description, FilePath, Type, Price) " + "VALUES ('"
-						+ Doc.getISBN() + "', '" + Doc.getTitle() + "', '" + authorID.getId() + "', '"
+				sql = "INSERT INTO documents (Title, AuthorID, Description, FilePath, Type, Price) " + "VALUES ('" 
+						+ Doc.getTitle() + "', '" + authorID.getId() + "', '"
 						+ Doc.getDescription() + "','" + Doc.getFilePath() + "','" + 2 + "','" // needs to be changed
 						+ Doc.getPrice() + "');";
 			} else if (Doc.getType() == DocumentType.Journal) {
-				sql = "INSERT INTO documents (ISBN, Title, AuthorID, Description, FilePath, Type, Price) " + "VALUES ('"
-						+ Doc.getISBN() + "', '" + Doc.getTitle() + "', '" + authorID.getId() + "', '"
+				sql = "INSERT INTO documents (Title, AuthorID, Description, FilePath, Type, Price) " + "VALUES ('" 
+						+ Doc.getTitle() + "', '" + authorID.getId() + "', '"
 						+ Doc.getDescription() + "','" + Doc.getFilePath() + "','" + 3 + "','" // needs to be changed
 						+ Doc.getPrice() + "');";
 			}
 
-			statement = jdbc_connection.createStatement();
-			int result = statement.executeUpdate(sql);
-			if (result == 1)
-				return true;
+			//statement = jdbc_connection.createStatement();
+			//int result = statement.executeUpdate(sql);
+
+			pStatement = jdbc_connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+			pStatement.executeUpdate();
+			try (ResultSet generatedKeys = pStatement.getGeneratedKeys()) {
+				if (generatedKeys.next())
+					Doc.setISBN(generatedKeys.getInt(1));
+				return Doc;
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return false;
+		return null;
 	}
 
 	public Boolean deleteDocument(int ISBN) {
@@ -306,6 +321,46 @@ public class DatabaseInterface {
 		return false;
 	}
 
+	public Document updateDoc(Document update) {
+		String sql = null;
+		
+		User newU = getUserUN(update.getAuthor());
+		
+		if(update.getType()==DocumentType.Book)
+			sql = "UPDATE documents SET Title='" + update.getTitle() + "',"
+									 +"AuthorID='" + newU.getId() +  "',"
+									 +"Description='" + update.getDescription() + "',"
+									 +"Price='" + update.getPrice() + "',"
+									 +"Type='1' WHERE ISBN='" + update.getISBN() + "';";
+		else if(update.getType()==DocumentType.Journal)
+			sql = "UPDATE documents SET Title='" + update.getTitle() + "',"
+					 +"AuthorID='" + newU.getId() +  "',"
+					 +"Description='" + update.getDescription() + "',"
+					 +"Price='" + update.getPrice() + "',"
+					 +"Type='3' WHERE ISBN='" + update.getISBN() + "';";
+		else if(update.getType()==DocumentType.Magazine)
+			sql = "UPDATE documents SET Title='" + update.getTitle() + "',"
+					 +"AuthorID='" + newU.getId() +  "',"
+					 +"Description='" + update.getDescription() + "',"
+					 +"Price='" + update.getPrice() + "',"
+					 +"Type='2' WHERE ISBN='" + update.getISBN() + "';";
+		
+		try {
+			statement = jdbc_connection.createStatement();
+			statement.executeUpdate(sql);
+
+			return update;
+		}
+		catch(SQLException e) {
+			e.printStackTrace();
+		}
+		
+		
+		return null;
+									 
+		
+	}
+	
 	public Document getDocument(int ISBN) {
 		String sql = "SELECT * FROM documents WHERE ISBN=" + "'" + ISBN + "';";
 		try {
@@ -453,6 +508,9 @@ public class DatabaseInterface {
 		return -1;
 	}
 	
+	public double getDocISBN() {
+		return 0;
+	}
 	
 	public Boolean placePayment(PaymentInfo pay, double sum) {
 
