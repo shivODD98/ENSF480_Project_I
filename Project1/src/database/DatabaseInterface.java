@@ -134,32 +134,28 @@ public class DatabaseInterface {
 	 */
 	public User addRegisterBuyer(User newUser, String pass) {
 
+
 		String sql = null;
 
-		if (newUser.getType() == UserType.Operator) {
+		if (newUser.getType() == UserType.RegisteredBuyer) {
 
 			sql = "INSERT INTO users(Fname,Lname,Username,Password,Type)" + "VALUES(" + "'" + newUser.getFirstName()
 					+ "'," + "'" + newUser.getLastName() + "'," + "'" + newUser.getUsername() + "'," + "'" + pass + "',"
-					+ "'" + 2 + "'" + ");";
-		} else {
-			sql = "INSERT INTO users(Fname,Lname,Username,Password,Type)" + "VALUES(" + "'" + newUser.getFirstName()
-					+ "'," + "'" + newUser.getLastName() + "'," + "'" + newUser.getUsername() + "'," + "'" + pass + "',"
-					+ "'" + 2 + "'" + ");";
-		}
+					+ "'" + 1 + "'" + ");";
+		} 
 
 		try {
-			statement = jdbc_connection.createStatement();
-			int result = statement.executeUpdate(sql);
-			if (result == 1)
-				try (ResultSet generatedKeys = statement.getGeneratedKeys()){
-					if(generatedKeys.next())
-						newUser.setId(generatedKeys.getInt("ISBN"));
-					return newUser;
-				}
+			java.sql.PreparedStatement pStatement;
+			pStatement = jdbc_connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+			pStatement.executeUpdate();
+			try (ResultSet generatedKeys = pStatement.getGeneratedKeys()) {
+				if (generatedKeys.next())
+					newUser.setId(generatedKeys.getInt(1));
+				return newUser;
+			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
 		return null;
 	}
 

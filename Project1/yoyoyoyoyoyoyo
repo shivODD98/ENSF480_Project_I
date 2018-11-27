@@ -1,0 +1,128 @@
+#include <iostream>
+#include <stdlib.h>
+#include <stdint.h>
+#include <math.h>
+#include <queue>
+#include <pthread.h>
+
+
+using namespace std;
+
+struct process{
+    int start;
+    int subset;
+    unsigned long int number;
+};
+
+
+bool* isPrime;
+int count;
+int notPrimes = 0;
+pthread_mutex_t primes_mutex;
+
+void* checkPrime(void* data){
+    process* proc = (process*)data;
+    
+    for(int k=0; k<count; k++){
+        if(!isPrime[k])continue;
+        if(proc[k].subset == 0) continue;
+        if(proc[k].number <= 1) {
+            isPrime[k] = false;
+            pthread_mutex_lock(&primes_mutex);
+            notPrimes++;
+            pthread_mutex_unlock(&primes_mutex);
+            continue;
+        } 
+        else if(proc[k].number <= 3) {continue;} 
+        else if(proc[k].number% 2 == 0 || proc[k].number % 3 == 0) {
+            isPrime[k] = false;
+            pthread_mutex_lock(&primes_mutex);
+            notPrimes++;
+            pthread_mutex_unlock(&primes_mutex);
+            continue;
+        }
+
+        int64_t i = proc[k].start;
+        int64_t max = sqrt(proc[k].number);
+        for(int j=0;j<proc[k].subset; j++){
+            if(!isPrime[k])break;
+            if(proc[k].number == 5 || proc[k].number == 7)break;
+            if (proc[k].number % i == 0 || proc[k].number % (i+2) == 0) {
+                isPrime[k] = false;
+                pthread_mutex_lock(&primes_mutex);
+                notPrimes++;
+                pthread_mutex_unlock(&primes_mutex);
+            }
+            i += 6;
+
+        }
+    }
+    pthread_exit(0);
+}
+
+
+int main(int argc, char ** argv){
+    if(argc != 2) {
+        printf("Usage: countPrimes [nThreads]\n");
+        exit(-1);
+    }
+
+    int nThreads = atoi(argv[1]);
+    
+    if(nThreads < 1 || nThreads > 256){
+        printf("Bad arguments. 1 <= nThreads <= 256!\n");
+        exit(-1);
+    }
+
+    printf("Counting primes using %d thread%s.\n", nThreads, nThreads != 1 ? "s" : "");
+
+    count = 0;
+    vector<unsigned long int> numbers;
+    while(1) {
+        unsigned long int num;
+        if( 1 != scanf("%lu", & num)) break;
+        numbers.push_back(num);
+        count++;
+    }
+
+    isPrime = new bool[count];
+    for(int i = 0; i<count; i++){
+        isPrime[i] = true;
+    }
+
+    pthread_mutex_init(&primes_mutex, NULL);
+
+    //[nthreads][prime numbers]
+    process allProcesses[nThreads][count];
+
+    int64_t num;
+    for(int j = 0, start = 5; j<count; j++, start =5){
+        int nOfTasks = abs((sqrt(numbers[j]) - 5)/6) + 1;       //calculate the number of tasks needed for each (maybe)prime number
+        int firstThreads = nOfTasks%nThreads;                   //even out tasks for all threads
+        int nTaskPerThread = nOfTasks/nThreads;                 
+        for(int i=0; i<nThreads; i++){
+            allProcesses[i][j].number = numbers[j];             //populate 2d array
+            allProcesses[i][j].start = start;
+            
+            if(i<firstThreads) allProcesses[i][j].subset = nTaskPerThread +1;
+            
+            else allProcesses[i][j].subset = nTaskPerThread;
+
+            start += 6*allProcesses[i][j].subset;
+        }
+    }
+
+    //create threads
+    pthread_t threads[nThreads];
+    for(int i = 0; i<nThreads; i++){
+        pthread_create(&threads[i],NULL,checkPrime,&allProcesses[i]);
+    }
+
+    for(int i=0; i<nThreads; i++){
+        pthread_join(threads[i], NULL);
+    }
+
+    printf("Found %d primes.\n", count-notPrimes);
+
+    return 0;
+}

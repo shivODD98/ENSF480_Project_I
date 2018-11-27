@@ -52,10 +52,14 @@ public class SystemRunnable implements Runnable, Observer {
 					// call method that creates LoginController and does the login shit
 					LoginController lc = new LoginController(DBhelper);// , (LoginInfo) obj, socketOut);
 					// lc.executeMethod();
-					if(lc.login((LoginInfo) obj).getType()==UserType.RegisteredBuyer) {
+					User temp = lc.login((LoginInfo) obj);
+					if(temp.getType()==UserType.RegisteredBuyer) {
 						subject = NotifySingleton.getInstance();
 						subject.registerObserver(this);
 					}
+					
+					socketOut.writeObject(temp);
+					
 				}
 
 				if (obj instanceof String) {
@@ -79,17 +83,17 @@ public class SystemRunnable implements Runnable, Observer {
 						DocsController dc = new DocsController(DBhelper);
 						dc.addPromotion(((Document) doc).getISBN());
 					}
-					if (((String) obj).contains("ADD THIS DOCUMENTS")) {
+					if (((String) obj).contains("ADD THIS DOCUMENT")) {
 						Document doc = (Document) socketIn.readObject();
 						System.out.println(((Document) doc).getISBN());
 						DocsController dc = new DocsController(DBhelper);
-						Document rt = DBhelper.addDocument(doc);
+						Document rt = dc.addDocument(doc);//DBhelper.addDocument(doc);
 						socketOut.writeObject(rt);
 						System.out.println(rt.getISBN());
 						//dc.addDocument(doc);
 						//might have to write all docs and promotion back
 					}
-					if (((String) obj).contains("DELETE THIS DOCUMENTS")) {
+					if (((String) obj).contains("DELETE THIS DOCUMENT")) {
 						Document doc = (Document) socketIn.readObject();
 						System.out.println(((Document) doc).getISBN());
 						DocsController dc = new DocsController(DBhelper);

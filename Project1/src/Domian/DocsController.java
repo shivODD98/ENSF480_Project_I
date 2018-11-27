@@ -45,9 +45,9 @@ public class DocsController {
 		DBhelper.deleteDocument(id);
 	}
 
-	public void addDocument(Document doc) {
+	public Document addDocument(Document doc) {
 		FileHelper.uploadDocument(doc);
-		DBhelper.addDocument(doc);
+		return DBhelper.addDocument(doc);
 	}
 
 	public ArrayList<Document> getPromotions() {
