@@ -15,9 +15,11 @@ import SharedObjects.*;
 
 public class DocsController {
 	private DatabaseInterface DBhelper;
+	private FileSystemInterface FileHelper;
 
 	public DocsController(DatabaseInterface DBhelper) {
 		this.DBhelper = DBhelper;
+		FileHelper = new FileSystemInterface();
 	}
 
 	public ArrayList<Document> getAllDocuments() {
@@ -29,7 +31,7 @@ public class DocsController {
 	}
 	public Document getDocumentWithContent(int id) {
 		Document toreturn = DBhelper.getDocument(id);
-		toreturn.setBytes(createByteArray(new File(toreturn.getFilePath())));
+		toreturn.setBytes(FileHelper.createByteArray(new File(toreturn.getFilePath())));
 		return toreturn;
 	}
 
@@ -39,30 +41,12 @@ public class DocsController {
 	}
 
 	public void deleteDocument(int id) {
-		File file = new File(DBhelper.getDocument(id).getFilePath());
-		if(file.delete()) {
-			System.out.println("File Deleted");
-		}
+		FileHelper.deleteDocument(new File(DBhelper.getDocument(id).getFilePath()));
 		DBhelper.deleteDocument(id);
 	}
 
 	public void addDocument(Document doc) {
-		try {
-			File file = new File(doc.getTitle());
-			FileOutputStream fileOutputStream = new FileOutputStream(file);
-			fileOutputStream.write(doc.getBytes());
-			fileOutputStream.close();
-
-			 File copy = new File("/Users/danielheyns/Desktop/Server/Documents/" +
-			 doc.getAuthor() + "/" + doc.getTitle() + "."
-			 + getExtension(doc.getFilePath()));
-			doc.setFilePath(copy.getAbsolutePath());
-			copy.mkdirs();
-			copy.createNewFile();
-			copyFile(file, copy);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		FileHelper.uploadDocument(doc);
 		DBhelper.addDocument(doc);
 	}
 
@@ -79,55 +63,6 @@ public class DocsController {
 		DBhelper.removeDocPromotion(id);
 		NotifySingleton.getInstance().updateList(this);
 	}
-
-	public byte[] createByteArray(File file) {
-		long length = file.length();
-		byte[] content = new byte[(int) length];
-		try {
-			FileInputStream fis = new FileInputStream(file);
-			BufferedInputStream bos = new BufferedInputStream(fis);
-			bos.read(content, 0, (int) length);
-			bos.close();
-			fis.close();
-			return content;
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-
-	}
-
-	private static String getExtension(String path) {
-
-		String ext[] = path.split("\\.");
-		return ext[ext.length - 1];
-	}
-	
-	/**
-	 * copies the contents of one file to another, overwriting all previous data
-	 * @param sourceFile is the file to be copied
-	 * @param destFile is the file to be copied to
-	 * @throws IOException when the source or destfiles could not be found
-	 */
-	@SuppressWarnings("resource")
-	private static void copyFile(File sourceFile, File destFile) throws IOException {
-		FileChannel source = null;
-		FileChannel destination = null;
-
-		try {
-			source = new FileInputStream(sourceFile).getChannel();
-			destination = new FileOutputStream(destFile).getChannel();
-			destination.transferFrom(source, 0, source.size());
-		} finally {
-			if (source != null) {
-				source.close();
-			}
-			if (destination != null) {
-				destination.close();
-			}
-		}
-	}
-
 }
+
+

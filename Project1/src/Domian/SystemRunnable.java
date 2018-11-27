@@ -35,55 +35,53 @@ public class SystemRunnable implements Runnable, Observer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		subject = NotifySingleton.getInstance();
-		subject.registerObserver(this);
-		update();
 	}
 
 	@Override
 	public void run() {
 		System.out.println("in run");
 //		DatabaseInterface DBhelper = new DatabaseInterface();
-		
+
 		while (true) {
 
 			try {
 				Object obj = socketIn.readObject();
 
-
 				// Check Login
 				if (obj instanceof LoginInfo) {
-					System.out.println("in login");
 					// call method that creates LoginController and does the login shit
-					LoginController lc = new LoginController(DBhelper);//, (LoginInfo) obj, socketOut);
-					//lc.executeMethod();
-					socketOut.writeObject(lc.login((LoginInfo)obj));		
+					LoginController lc = new LoginController(DBhelper);// , (LoginInfo) obj, socketOut);
+					// lc.executeMethod();
+					if(lc.login((LoginInfo) obj).getType()==UserType.RegisteredBuyer) {
+						subject = NotifySingleton.getInstance();
+						subject.registerObserver(this);
+					}
 				}
-				
-				if(obj instanceof String) {
-					if(((String)obj).contains("GET ALL DOCUMENTS")) {
+
+				if (obj instanceof String) {
+					if (((String) obj).contains("GET ALL DOCUMENTS")) {
 						DocsController dc = new DocsController(DBhelper);
 						socketOut.writeObject(dc.getAllDocuments());
 					}
-					if(((String)obj).contains("GET ALL PROMOTIONS")) {
+					if (((String) obj).contains("GET ALL PROMOTIONS")) {
 						DocsController dc = new DocsController(DBhelper);
 						socketOut.writeObject(dc.getPromotions());
 					}
-					if(((String)obj).contains("DELETE FROM PROMOTION")) {
-						Document doc = (Document) socketIn.readObject(); 
-						System.out.println(((Document)doc).getISBN());
+					if (((String) obj).contains("DELETE FROM PROMOTION")) {
+						Document doc = (Document) socketIn.readObject();
+						System.out.println(((Document) doc).getISBN());
 						DocsController dc = new DocsController(DBhelper);
-						dc.removePromotion(((Document)doc).getISBN());
+						dc.removePromotion(((Document) doc).getISBN());
 					}
-					if(((String)obj).contains("ADD TO PROMOTION")) {
-						Document doc = (Document) socketIn.readObject(); 
-						System.out.println(((Document)doc).getISBN());
+					if (((String) obj).contains("ADD TO PROMOTION")) {
+						Document doc = (Document) socketIn.readObject();
+						System.out.println(((Document) doc).getISBN());
 						DocsController dc = new DocsController(DBhelper);
-						dc.addPromotion(((Document)doc).getISBN());
+						dc.addPromotion(((Document) doc).getISBN());
 					}
-					if(((String)obj).contains("ADD THIS DOCUMENT")) {
-						Document doc = (Document) socketIn.readObject(); 
-						System.out.println(((Document)doc).getISBN());
+					if (((String) obj).contains("ADD THIS DOCUMENTS")) {
+						Document doc = (Document) socketIn.readObject();
+						System.out.println(((Document) doc).getISBN());
 						DocsController dc = new DocsController(DBhelper);
 						Document rt = DBhelper.addDocument(doc);
 						socketOut.writeObject(rt);
@@ -91,12 +89,12 @@ public class SystemRunnable implements Runnable, Observer {
 						//dc.addDocument(doc);
 						//might have to write all docs and promotion back
 					}
-					if(((String)obj).contains("DELETE THIS DOCUMENT")) {
-						Document doc = (Document) socketIn.readObject(); 
-						System.out.println(((Document)doc).getISBN());
+					if (((String) obj).contains("DELETE THIS DOCUMENTS")) {
+						Document doc = (Document) socketIn.readObject();
+						System.out.println(((Document) doc).getISBN());
 						DocsController dc = new DocsController(DBhelper);
-						dc.deleteDocument(((Document)doc).getISBN());
-						//might have to write all docs and promotion back
+						dc.deleteDocument(((Document) doc).getISBN());
+						// might have to write all docs and promotion back
 					}
 					if(((String)obj).contains("UPDATE THIS DOCUMENT")) {
 						Document doc = (Document) socketIn.readObject(); 
@@ -106,26 +104,25 @@ public class SystemRunnable implements Runnable, Observer {
 //						dc.addDocument(doc);
 						//might have to write all docs and promotion back
 					}
-					if(((String)obj).contains("ADD USER")) {
+					if (((String) obj).contains("ADD USER")) {
 						User newUser = (User) socketIn.readObject();
 						String pass = (String) socketIn.readObject();
 						LoginController lc = new LoginController(DBhelper);
 						socketOut.writeObject(lc.registerUser(newUser,pass));
 					}
-					if(((String)obj).contains("UNREGISTER USER")) {
+					if (((String) obj).contains("UNREGISTER USER")) {
 						User newUser = (User) socketIn.readObject();
 						LoginController lc = new LoginController(DBhelper);
 						lc.unregisterUser(newUser.getId());
 					}
-					if(((String)obj).contains("UPDATE USER")) {
+					if (((String) obj).contains("UPDATE USER")) {
 						User newUser = (User) socketIn.readObject();
-						
-						//NEED SOME EXTRA INFO
-						
-						
-						//DBhelper.updateUser(newUser)
+
+						// NEED SOME EXTRA INFO
+
+						// DBhelper.updateUser(newUser)
 					}
-					if(((String)obj).contains("BUY DOCUMENT")) {
+					if (((String) obj).contains("BUY DOCUMENT")) {
 						PaymentInfo info = (PaymentInfo) socketIn.readObject();
 						OrderController oc = new OrderController(DBhelper);
 						oc.placeOrder(info);
@@ -139,8 +136,7 @@ public class SystemRunnable implements Runnable, Observer {
 					
 					socketOut.flush();
 				}
-				
-				
+
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -154,8 +150,14 @@ public class SystemRunnable implements Runnable, Observer {
 
 	@Override
 	public void update() {
-		// send list of promotion items from NotifySingleton to User or notify user somehow that the list has changed
+		if (subject != null) {
+			try {
+				socketOut.writeObject(subject.documents);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
+		}
 	}
 
 }
